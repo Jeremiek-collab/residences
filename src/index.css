@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-sand-50 text-navy-900 font-sans antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif text-navy-900;
+    font-family: 'Playfair Display', serif;
+  }
+
+  p, span, li, button, input, textarea, label {
+    font-family: 'Inter', sans-serif;
+  }
+
+  .font-serif {
+    font-family: 'Playfair Display', serif !important;
+  }
+
+  .font-sans {
+    font-family: 'Inter', sans-serif !important;
+  }
+}
+
+@layer components {
+  /* Glassmorphism card */
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/40 shadow-sm;
+  }
+
+  .glass-nav {
+    @apply bg-white/80 backdrop-blur-lg border-b border-sand-100/50;
+  }
+
+  .btn-primary {
+    @apply bg-azure-600 hover:bg-azure-500 text-white font-medium py-3 px-6 rounded-lg transition-all duration-300 transform active:scale-95 shadow-md shadow-azure-600/10 hover:shadow-lg hover:shadow-azure-600/20 text-center;
+  }
+
+  .btn-secondary {
+    @apply bg-sand-100 hover:bg-sand-200 text-sand-800 font-medium py-3 px-6 rounded-lg transition-all duration-300 active:scale-95 text-center;
+  }
+
+  .btn-outline {
+    @apply border border-azure-600 text-azure-600 hover:bg-azure-50/50 font-medium py-3 px-6 rounded-lg transition-all duration-300 active:scale-95 text-center;
+  }
+
+  .admin-btn {
+    @apply bg-navy-900 hover:bg-navy-800 text-white font-medium py-2 px-4 rounded-md transition-all duration-200;
+  }
+}
+
+/* Custom styles for calendar and other animations */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom animation for hero text */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
