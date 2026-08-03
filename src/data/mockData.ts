@@ -28,12 +28,12 @@ export const mockVillas: Villa[] = [
     location: "Jacqueville, Quartier Millionnaire Est",
     featured: true,
     amenities: ["Wi-Fi Haut Débit", "Climatisation", "Télévision HD", "Chauffe-eau", "Cuisine équipée"],
-    videoUrl: "/résidence 2/l_objet_pour_faire_les_flammes.mp4",
-    imageUrl: "/résidence 2/chambre_2.jpg",
+    videoUrl: "/residence-2/video_flammes.mp4",
+    imageUrl: "/residence-2/chambre_2.jpg",
     images: [
-      "/résidence 2/chambre_2.jpg",
-      "/résidence 2/salon_2.jpg",
-      "/résidence 2/photo_2026-07-30 22.45.11.jpeg"
+      "/residence-2/chambre_2.jpg",
+      "/residence-2/salon_2.jpg",
+      "/residence-2/photo_3.jpeg"
     ]
   },
   {
@@ -48,13 +48,13 @@ export const mockVillas: Villa[] = [
     location: "Jacqueville, Quartier Millionnaire Est",
     featured: true,
     amenities: ["Wi-Fi Haut Débit", "Climatisation", "Télévision HD", "Chauffe-eau", "Cuisine équipée"],
-    videoUrl: "/résidence 3/2026-07-31 19.25.32.mp4",
-    imageUrl: "/résidence 3/WhatsApp Image 2026-07-27 at 22.04.28.jpeg",
+    videoUrl: "/residence-3/video_main.mp4",
+    imageUrl: "/residence-3/photo_1.jpeg",
     images: [
-      "/résidence 3/WhatsApp Image 2026-07-27 at 22.04.28.jpeg",
-      "/résidence 3/5999023192082680835_121.jpg",
-      "/résidence 3/5994683552831835326_121.jpg",
-      "/résidence 3/WhatsApp Image 2026-07-27 at 22.04.27 (2).jpeg"
+      "/residence-3/photo_1.jpeg",
+      "/residence-3/photo_3.jpg",
+      "/residence-3/photo_2.jpg",
+      "/residence-3/photo_4.jpeg"
     ]
   },
   {
@@ -69,14 +69,14 @@ export const mockVillas: Villa[] = [
     location: "Jacqueville, Quartier Millionnaire Est",
     featured: true,
     amenities: ["Double Climatisation", "Wi-Fi Haut Débit", "Télévision HD", "Chauffe-eau", "Cuisine équipée"],
-    videoUrl: "/résidence 4/2026-08-01 23.06.39.mp4",
-    imageUrl: "/résidence 4/WhatsApp Image 2026-07-27 at 22.03.24.jpeg",
+    videoUrl: "/residence-4/video_main.mp4",
+    imageUrl: "/residence-4/photo_1.jpeg",
     images: [
-      "/résidence 4/WhatsApp Image 2026-07-27 at 22.03.24.jpeg",
-      "/résidence 4/5999023192082680856_121.jpg",
-      "/résidence 4/5999023192082680859_121.jpg",
-      "/résidence 4/5999023192082680862_121.jpg",
-      "/résidence 4/5999023192082680869_121.jpg"
+      "/residence-4/photo_1.jpeg",
+      "/residence-4/photo_2.jpg",
+      "/residence-4/photo_3.jpg",
+      "/residence-4/photo_4.jpg",
+      "/residence-4/photo_5.jpg"
     ]
   },
   {
@@ -91,12 +91,12 @@ export const mockVillas: Villa[] = [
     location: "Jacqueville, Quartier Millionnaire Est",
     featured: true,
     amenities: ["Double Climatisation", "Wi-Fi Haut Débit", "Télévision HD", "Chauffe-eau", "Cuisine équipée", "Canal+"],
-    videoUrl: "/résidence 5/2026-08-01 23.38.22.mp4",
-    imageUrl: "/résidence 5/5999023192082680852_121.jpg",
+    videoUrl: "/residence-5/video_main.mp4",
+    imageUrl: "/residence-5/photo_1.jpg",
     images: [
-      "/résidence 5/5999023192082680852_121.jpg",
-      "/résidence 5/5999023192082680853_121.jpg",
-      "/résidence 5/5999023192082680857_121.jpg"
+      "/residence-5/photo_1.jpg",
+      "/residence-5/photo_2.jpg",
+      "/residence-5/photo_3.jpg"
     ]
   },
   {
@@ -111,10 +111,10 @@ export const mockVillas: Villa[] = [
     location: "Jacqueville, Quartier Millionnaire Est",
     featured: false,
     amenities: ["Wi-Fi Haut Débit", "Climatisation", "Télévision HD", "Chauffe-eau", "Cuisine moderne"],
-    videoUrl: "/résidence 6/2026-08-01 23.55.30.mp4",
-    imageUrl: "/résidence 6/WhatsApp Image 2026-07-27 at 22.04.29 22.51.03.jpeg",
+    videoUrl: "/residence-6/video_main.mp4",
+    imageUrl: "/residence-6/photo_1.jpeg",
     images: [
-      "/résidence 6/WhatsApp Image 2026-07-27 at 22.04.29 22.51.03.jpeg"
+      "/residence-6/photo_1.jpeg"
     ]
   },
   {
@@ -129,11 +129,11 @@ export const mockVillas: Villa[] = [
     location: "Jacqueville, Quartier Millionnaire Est",
     featured: false,
     amenities: ["Wi-Fi Haut Débit", "Climatisation", "Télévision HD", "Chauffe-eau", "Cuisine équipée"],
-    videoUrl: "/résidence 7/2026-08-02 19.02.36.mp4",
-    imageUrl: "/résidence 7/5999023192082680842_121.jpg",
+    videoUrl: "/residence-7/video_main.mp4",
+    imageUrl: "/residence-7/photo_1.jpg",
     images: [
-      "/résidence 7/5999023192082680842_121.jpg",
-      "/résidence 7/5999023192082680841_121-2.jpg"
+      "/residence-7/photo_1.jpg",
+      "/residence-7/photo_2.jpg"
     ]
   }
 ];
