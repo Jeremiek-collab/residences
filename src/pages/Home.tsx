@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useBookings } from '../context/BookingContext';
 import photo1Url from '../../photo1.png';
+import { TestimonialsSection } from '../components/TestimonialsSection';
 
 interface HomeProps {
   setCurrentPage: (page: string) => void;
@@ -311,39 +312,8 @@ export const Home: React.FC<HomeProps> = ({ setCurrentPage, setSelectedVillaId }
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center space-y-12 border-t border-[#c5a880]/15">
-        <ScrollRevealSection className="space-y-12">
-          <div className="space-y-2">
-            <span className="text-xs font-semibold text-[#c5a880] uppercase tracking-widest block font-sans">Témoignages</span>
-            <h2 className="text-3xl font-serif font-bold text-navy-950">Ils ont séjourné chez nous</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white/40 backdrop-blur-sm p-8 rounded-2xl border border-[#c5a880]/15 shadow-sm space-y-4">
-              <div className="text-yellow-400 text-lg">★★★★★</div>
-              <p className="text-sm text-navy-600 leading-relaxed italic font-sans">
-                "Un week-end fantastique en famille. La Villa L'Étoile d'Azur est magnifique, la propreté est irréprochable et le gestionnaire est extrêmement disponible. Nous reviendrons sans hésiter."
-              </p>
-              <div className="font-semibold text-navy-950 text-sm font-sans">Franck A. (Abidjan)</div>
-            </div>
-            <div className="bg-white/40 backdrop-blur-sm p-8 rounded-2xl border border-[#c5a880]/15 shadow-sm space-y-4">
-              <div className="text-yellow-400 text-lg">★★★★★</div>
-              <p className="text-sm text-navy-600 leading-relaxed italic font-sans">
-                "La vue sur l'océan depuis le transat est tout simplement magique. L'endroit est très sécurisé et le calme permet une vraie déconnexion."
-              </p>
-              <div className="font-semibold text-navy-950 text-sm font-sans">Amélie C. (Paris)</div>
-            </div>
-            <div className="bg-white/40 backdrop-blur-sm p-8 rounded-2xl border border-[#c5a880]/15 shadow-sm space-y-4">
-              <div className="text-yellow-400 text-lg">★★★★★</div>
-              <p className="text-sm text-navy-600 leading-relaxed italic font-sans">
-                "Le système de réservation par formulaire est simple. Le gestionnaire m'a appelé par WhatsApp 15 minutes après ma soumission pour valider la caution et m'expliquer le chemin."
-              </p>
-              <div className="font-semibold text-navy-950 text-sm font-sans">Yasmine K. (Bouaké)</div>
-            </div>
-          </div>
-        </ScrollRevealSection>
-      </section>
+      {/* Dynamic Testimonials & Review System */}
+      <TestimonialsSection />
     </div>
   );
 };
