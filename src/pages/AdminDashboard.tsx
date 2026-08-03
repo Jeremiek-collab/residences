@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useBookings } from '../context/BookingContext';
 import { 
-  Lock, Calendar, FileText, Settings, Check, X, Trash2, ShieldCheck, Info, Plus, Mail, MessageCircle
+  Lock, Calendar, FileText, Settings, X, Trash2, ShieldCheck, Info, Plus, Mail, MessageCircle
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
@@ -28,14 +28,6 @@ export const AdminDashboard: React.FC = () => {
   // Email Notification Modal State
   const [emailModalBooking, setEmailModalBooking] = useState<{ booking: any; villaName: string } | null>(null);
   const [toastMessage, setToastMessage] = useState('');
-
-  const handleConfirmBooking = (b: any) => {
-    const villaName = villas.find(v => v.id === b.villaId)?.title || "la résidence";
-    updateBookingStatus(b.id, 'confirmed');
-    setToastMessage(`📧 E-mail de confirmation envoyé à ${b.clientName} (${b.clientEmail}) !`);
-    setEmailModalBooking({ booking: b, villaName });
-    setTimeout(() => setToastMessage(''), 6000);
-  };
 
   // Authentication handler
   const handleLogin = (e: React.FormEvent) => {
@@ -310,14 +302,30 @@ export const AdminDashboard: React.FC = () => {
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end space-x-2">
                               {b.status === 'pending' && (
-                                <>
+                                <div className="flex items-center space-x-1.5">
                                   <button
-                                    onClick={() => handleConfirmBooking(b)}
-                                    className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg transition-colors flex items-center space-x-1"
-                                    title="Confirmer la réservation et générer l'e-mail de confirmation"
+                                    onClick={() => {
+                                      updateBookingStatus(b.id, 'confirmed');
+                                      setToastMessage(`📧 Réservation confirmée ! Envoi d'e-mail à ${b.clientEmail}...`);
+                                      window.location.href = getClientConfirmationMailtoUrl(b, villaName);
+                                    }}
+                                    className="px-2.5 py-1.5 bg-azure-600 hover:bg-azure-500 text-white rounded-lg transition-all text-xs font-semibold flex items-center space-x-1 shadow-sm cursor-pointer"
+                                    title="Confirmer et ouvrir l'e-mail pré-rempli pour le client"
                                   >
-                                    <Check className="w-4 h-4" />
-                                    <span className="text-xs font-semibold">Valider</span>
+                                    <Mail className="w-3.5 h-3.5" />
+                                    <span>Mail Client</span>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      updateBookingStatus(b.id, 'confirmed');
+                                      setToastMessage(`💬 Réservation confirmée ! Ouverture de WhatsApp pour ${b.clientPhone}...`);
+                                      window.open(getClientConfirmationWhatsAppUrl(b, villaName), '_blank');
+                                    }}
+                                    className="px-2.5 py-1.5 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-lg transition-all text-xs font-semibold flex items-center space-x-1 shadow-sm cursor-pointer"
+                                    title="Confirmer et ouvrir WhatsApp pré-rempli pour le client"
+                                  >
+                                    <MessageCircle className="w-3.5 h-3.5 fill-current" />
+                                    <span>WhatsApp</span>
                                   </button>
                                   <button
                                     onClick={() => updateBookingStatus(b.id, 'cancelled')}
@@ -326,7 +334,7 @@ export const AdminDashboard: React.FC = () => {
                                   >
                                     <X className="w-4 h-4" />
                                   </button>
-                                </>
+                                </div>
                               )}
                               {b.status === 'confirmed' && (
                                 <div className="flex items-center space-x-2">
@@ -600,7 +608,6 @@ export const AdminDashboard: React.FC = () => {
                   <div className="bg-white p-3 rounded-xl border border-sand-150 space-y-1 my-2">
                     <p>• <strong>Résidence :</strong> {emailModalBooking.villaName}</p>
                     <p>• <strong>Dates du séjour :</strong> Du {emailModalBooking.booking.startDate} au {emailModalBooking.booking.endDate}</p>
-                    <p>• <strong>Montant total :</strong> {emailModalBooking.booking.totalPrice.toLocaleString()} FCFA</p>
                     <p>• <strong>Emplacement :</strong> Jacqueville, Quartier Millionnaire Est</p>
                   </div>
                   <p>
@@ -657,7 +664,6 @@ Détails de votre réservation :
 ----------------------------------------
 - Résidence : ${villaName}
 - Dates du séjour : Du ${booking.startDate} au ${booking.endDate}
-- Montant total : ${booking.totalPrice.toLocaleString()} FCFA
 - Adresse : Jacqueville, Quartier Millionnaire Est
 
 Notre équipe vous attend avec impatience ! Pour préparer votre arrivée ou pour toute question, vous pouvez nous contacter à tout moment par téléphone ou WhatsApp au +225 01 72 70 70 00 ou par email à yirekouassi@gmail.com.
@@ -670,9 +676,21 @@ yirekouassi@gmail.com`
 }
 
 function getClientConfirmationWhatsAppUrl(booking: any, villaName: string): string {
-  const cleanPhone = booking.clientPhone ? booking.clientPhone.replace(/\D/g, '') : '';
+  let cleanPhone = booking.clientPhone ? booking.clientPhone.replace(/\D/g, '') : '';
+  if (cleanPhone.startsWith('0')) {
+    cleanPhone = '225' + cleanPhone;
+  } else if (cleanPhone.length === 10 && !cleanPhone.startsWith('225')) {
+    cleanPhone = '225' + cleanPhone;
+  }
   const text = encodeURIComponent(
-`Bonjour ${booking.clientName}, votre réservation pour la résidence "${villaName}" (du ${booking.startDate} au ${booking.endDate}) a été CONFIRMÉE avec succès par l'administration Palm aura Jacqueville !`
+`Bonjour ${booking.clientName},
+
+Nous avons le plaisir de vous informer que votre demande de réservation pour la résidence "${villaName}" (du ${booking.startDate} au ${booking.endDate}) à Jacqueville a été CONFIRMÉE avec succès par l'administration Palm aura !
+
+Pour préparer votre arrivée ou pour toute question, vous pouvez nous contacter directement au +225 01 72 70 70 00.
+
+Cordialement,
+L'équipe Palm aura Jacqueville`
   );
   return `https://wa.me/${cleanPhone}?text=${text}`;
 }

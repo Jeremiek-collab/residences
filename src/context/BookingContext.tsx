@@ -238,7 +238,6 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       Détails de votre séjour :
       - Résidence : ${targetVilla.title}
       - Dates : Du ${targetBooking.startDate} au ${targetBooking.endDate}
-      - Montant total : ${targetBooking.totalPrice.toLocaleString()} FCFA
       - Emplacement : ${targetVilla.location}
 
       Le gestionnaire prendra contact avec vous incessamment au ${targetBooking.clientPhone} ou via WhatsApp au +225 01 72 70 70 00 pour finaliser le dépôt de garantie et préparer votre arrivée.
