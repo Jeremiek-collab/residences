@@ -57,14 +57,6 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       createdAt: "2026-07-28T14:32:00.000Z"
     },
     {
-      id: "rev-2",
-      name: "Amélie C.",
-      location: "Paris",
-      rating: 5,
-      comment: "La vue sur l'océan depuis le transat est tout simplement magique. L'endroit est très sécurisé et le calme permet une vraie déconnexion.",
-      createdAt: "2026-07-29T10:15:00.000Z"
-    },
-    {
       id: "rev-3",
       name: "Yasmine K.",
       location: "Bouaké",
@@ -152,7 +144,10 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const storedReviews = localStorage.getItem('jacqueville_reviews');
     if (storedReviews) {
       try {
-        setReviews(JSON.parse(storedReviews));
+        const parsedReviews = JSON.parse(storedReviews) as Review[];
+        const filtered = parsedReviews.filter(r => r.id !== 'rev-2' && !r.name.includes('Amélie C'));
+        setReviews(filtered);
+        localStorage.setItem('jacqueville_reviews', JSON.stringify(filtered));
       } catch (e) {
         setReviews(initialReviews);
         localStorage.setItem('jacqueville_reviews', JSON.stringify(initialReviews));
