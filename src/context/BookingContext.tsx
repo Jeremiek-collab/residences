@@ -223,6 +223,32 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const updateBookingStatus = (id: string, status: Booking['status']) => {
+    const targetBooking = bookings.find(b => b.id === id);
+    const targetVilla = targetBooking ? villas.find(v => v.id === targetBooking.villaId) : null;
+
+    if (status === 'confirmed' && targetBooking && targetVilla) {
+      console.log(`[SERVICE ENVOI EMAIL CONFIRMATION CLIENT]
+      À: ${targetBooking.clientEmail}
+      Objet: Confirmation de votre réservation - ${targetVilla.title} | Palm aura Jacqueville
+
+      Bonjour ${targetBooking.clientName},
+
+      Nous avons le plaisir de vous informer que votre demande de réservation pour la résidence "${targetVilla.title}" à Jacqueville a été CONFIRMÉE avec succès par le gestionnaire !
+
+      Détails de votre séjour :
+      - Résidence : ${targetVilla.title}
+      - Dates : Du ${targetBooking.startDate} au ${targetBooking.endDate}
+      - Montant total : ${targetBooking.totalPrice.toLocaleString()} FCFA
+      - Emplacement : ${targetVilla.location}
+
+      Le gestionnaire prendra contact avec vous incessamment au ${targetBooking.clientPhone} ou via WhatsApp au +225 01 72 70 70 00 pour finaliser le dépôt de garantie et préparer votre arrivée.
+
+      Cordialement,
+      L'équipe Palm aura Jacqueville
+      yirekouassi@gmail.com
+      `);
+    }
+
     const updated = bookings.map(b => {
       if (b.id === id) {
         return { ...b, status };

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useBookings } from '../context/BookingContext';
 import { 
-  Lock, Calendar, FileText, Settings, Check, X, Trash2, ShieldCheck, Info, Plus
+  Lock, Calendar, FileText, Settings, Check, X, Trash2, ShieldCheck, Info, Plus, Mail, MessageCircle
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
@@ -24,6 +24,18 @@ export const AdminDashboard: React.FC = () => {
   const [blockReason, setBlockReason] = useState('');
   const [blockSuccess, setBlockSuccess] = useState('');
   const [blockError, setBlockError] = useState('');
+
+  // Email Notification Modal State
+  const [emailModalBooking, setEmailModalBooking] = useState<{ booking: any; villaName: string } | null>(null);
+  const [toastMessage, setToastMessage] = useState('');
+
+  const handleConfirmBooking = (b: any) => {
+    const villaName = villas.find(v => v.id === b.villaId)?.title || "la résidence";
+    updateBookingStatus(b.id, 'confirmed');
+    setToastMessage(`📧 E-mail de confirmation envoyé à ${b.clientName} (${b.clientEmail}) !`);
+    setEmailModalBooking({ booking: b, villaName });
+    setTimeout(() => setToastMessage(''), 6000);
+  };
 
   // Authentication handler
   const handleLogin = (e: React.FormEvent) => {
@@ -300,11 +312,12 @@ export const AdminDashboard: React.FC = () => {
                               {b.status === 'pending' && (
                                 <>
                                   <button
-                                    onClick={() => updateBookingStatus(b.id, 'confirmed')}
-                                    className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg transition-colors"
-                                    title="Confirmer la réservation"
+                                    onClick={() => handleConfirmBooking(b)}
+                                    className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-lg transition-colors flex items-center space-x-1"
+                                    title="Confirmer la réservation et générer l'e-mail de confirmation"
                                   >
                                     <Check className="w-4 h-4" />
+                                    <span className="text-xs font-semibold">Valider</span>
                                   </button>
                                   <button
                                     onClick={() => updateBookingStatus(b.id, 'cancelled')}
@@ -316,12 +329,22 @@ export const AdminDashboard: React.FC = () => {
                                 </>
                               )}
                               {b.status === 'confirmed' && (
-                                <button
-                                  onClick={() => updateBookingStatus(b.id, 'cancelled')}
-                                  className="text-xs text-red-600 hover:text-red-500 hover:underline px-2.5 py-1"
-                                >
-                                  Annuler
-                                </button>
+                                <div className="flex items-center space-x-2">
+                                  <button
+                                    onClick={() => setEmailModalBooking({ booking: b, villaName })}
+                                    className="p-1.5 bg-azure-50 hover:bg-azure-100 text-azure-600 rounded-lg transition-colors text-xs font-medium flex items-center space-x-1"
+                                    title="Voir / Renvoyer l'e-mail de confirmation"
+                                  >
+                                    <Mail className="w-3.5 h-3.5" />
+                                    <span>E-mail</span>
+                                  </button>
+                                  <button
+                                    onClick={() => updateBookingStatus(b.id, 'cancelled')}
+                                    className="text-xs text-red-600 hover:text-red-500 hover:underline px-1.5 py-1"
+                                  >
+                                    Annuler
+                                  </button>
+                                </div>
                               )}
                               <button
                                 onClick={() => {
@@ -530,7 +553,126 @@ export const AdminDashboard: React.FC = () => {
           </div>
         )}
 
+        {/* Toast alert banner */}
+        {toastMessage && (
+          <div className="fixed top-6 right-6 z-50 bg-emerald-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-emerald-500/30 flex items-center space-x-3 animate-fade-in-up">
+            <Mail className="w-5 h-5 text-emerald-400 shrink-0" />
+            <span className="text-xs font-semibold">{toastMessage}</span>
+            <button onClick={() => setToastMessage('')} className="text-white/60 hover:text-white ml-2">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Confirmation Email Modal */}
+        {emailModalBooking && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 space-y-6 shadow-2xl border border-sand-100 animate-fade-in-up relative text-left">
+              <button
+                onClick={() => setEmailModalBooking(null)}
+                className="absolute top-5 right-5 text-navy-400 hover:text-navy-950 p-1 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center space-x-3 border-b border-sand-100 pb-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
+                  <Mail className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-xl font-bold text-navy-950">E-mail de confirmation client</h3>
+                  <p className="text-xs text-emerald-600 font-semibold">Statut : CONFIRMÉ (Actif)</p>
+                </div>
+              </div>
+
+              {/* Email template preview card */}
+              <div className="bg-sand-50/80 rounded-2xl p-5 border border-sand-200 text-xs text-navy-800 space-y-3 font-mono">
+                <div className="border-b border-sand-200 pb-2 space-y-1">
+                  <p><span className="text-navy-400 font-sans font-semibold">À :</span> <strong className="text-navy-950 font-sans">{emailModalBooking.booking.clientEmail}</strong></p>
+                  <p><span className="text-navy-400 font-sans font-semibold">Objet :</span> <strong className="text-navy-950 font-sans">Confirmation de réservation - {emailModalBooking.villaName} | Palm aura Jacqueville</strong></p>
+                </div>
+
+                <div className="space-y-2 leading-relaxed font-sans text-navy-700">
+                  <p className="font-semibold text-navy-950">Bonjour {emailModalBooking.booking.clientName},</p>
+                  <p>
+                    Nous avons le plaisir de vous confirmer que votre demande de réservation pour la résidence <strong>{emailModalBooking.villaName}</strong> à Jacqueville est <strong>CONFIRMÉE</strong> !
+                  </p>
+                  <div className="bg-white p-3 rounded-xl border border-sand-150 space-y-1 my-2">
+                    <p>• <strong>Résidence :</strong> {emailModalBooking.villaName}</p>
+                    <p>• <strong>Dates du séjour :</strong> Du {emailModalBooking.booking.startDate} au {emailModalBooking.booking.endDate}</p>
+                    <p>• <strong>Montant total :</strong> {emailModalBooking.booking.totalPrice.toLocaleString()} FCFA</p>
+                    <p>• <strong>Emplacement :</strong> Jacqueville, Quartier Millionnaire Est</p>
+                  </div>
+                  <p>
+                    Pour toute question ou pour finaliser les détails de votre accueil, vous pouvez nous joindre directement par téléphone/WhatsApp au <strong>+225 01 72 70 70 00</strong>.
+                  </p>
+                  <p className="pt-2 text-navy-500 font-light italic">Cordialement,<br/>L'équipe Palm aura Jacqueville</p>
+                </div>
+              </div>
+
+              {/* Modal Actions */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <a
+                  href={getClientConfirmationMailtoUrl(emailModalBooking.booking, emailModalBooking.villaName)}
+                  className="flex-1 bg-azure-600 hover:bg-azure-500 text-white py-3 px-4 rounded-xl text-xs font-semibold text-center flex items-center justify-center space-x-2 shadow-md transition-transform active:scale-95"
+                >
+                  <Mail className="w-4 h-4" />
+                  <span>Ouvrir mon logiciel de messagerie</span>
+                </a>
+                <a
+                  href={getClientConfirmationWhatsAppUrl(emailModalBooking.booking, emailModalBooking.villaName)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 bg-[#25D366] hover:bg-[#20ba5a] text-white py-3 px-4 rounded-xl text-xs font-semibold text-center flex items-center justify-center space-x-2 shadow-md transition-transform active:scale-95"
+                >
+                  <MessageCircle className="w-4 h-4 fill-current" />
+                  <span>Transmettre via WhatsApp</span>
+                </a>
+              </div>
+
+              <div className="text-center pt-1">
+                <button
+                  onClick={() => setEmailModalBooking(null)}
+                  className="text-xs text-navy-500 hover:text-navy-900 font-medium underline"
+                >
+                  Fermer la fenêtre
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
+
+function getClientConfirmationMailtoUrl(booking: any, villaName: string): string {
+  const subject = encodeURIComponent(`Confirmation de votre réservation - ${villaName} | Palm aura Jacqueville`);
+  const body = encodeURIComponent(
+`Bonjour ${booking.clientName},
+
+Nous avons le plaisir de vous informer que votre demande de réservation pour la résidence "${villaName}" à Jacqueville a été CONFIRMÉE avec succès !
+
+Détails de votre réservation :
+----------------------------------------
+- Résidence : ${villaName}
+- Dates du séjour : Du ${booking.startDate} au ${booking.endDate}
+- Montant total : ${booking.totalPrice.toLocaleString()} FCFA
+- Adresse : Jacqueville, Quartier Millionnaire Est
+
+Notre équipe vous attend avec impatience ! Pour préparer votre arrivée ou pour toute question, vous pouvez nous contacter à tout moment par téléphone ou WhatsApp au +225 01 72 70 70 00 ou par email à yirekouassi@gmail.com.
+
+Cordialement,
+L'équipe Palm aura Jacqueville
+yirekouassi@gmail.com`
+  );
+  return `mailto:${booking.clientEmail}?subject=${subject}&body=${body}`;
+}
+
+function getClientConfirmationWhatsAppUrl(booking: any, villaName: string): string {
+  const cleanPhone = booking.clientPhone ? booking.clientPhone.replace(/\D/g, '') : '';
+  const text = encodeURIComponent(
+`Bonjour ${booking.clientName}, votre réservation pour la résidence "${villaName}" (du ${booking.startDate} au ${booking.endDate}) a été CONFIRMÉE avec succès par l'administration Palm aura Jacqueville !`
+  );
+  return `https://wa.me/${cleanPhone}?text=${text}`;
+}
