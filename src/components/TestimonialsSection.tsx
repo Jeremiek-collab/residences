@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useBookings } from '../context/BookingContext';
 import { Star, MessageSquarePlus, CheckCircle, X, Sparkles } from 'lucide-react';
+import { formatDateDDMMYYYY } from '../utils/dateUtils';
 
 export const TestimonialsSection: React.FC = () => {
   const { reviews, addReview } = useBookings();
@@ -228,10 +229,5 @@ export const TestimonialsSection: React.FC = () => {
 };
 
 function formatDate(isoStr: string): string {
-  try {
-    const d = new Date(isoStr);
-    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
-  } catch (e) {
-    return 'Récemment';
-  }
+  return formatDateDDMMYYYY(isoStr);
 }

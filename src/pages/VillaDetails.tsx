@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useBookings } from '../context/BookingContext';
 import { BookingCalendar } from '../components/BookingCalendar';
 import { WhatsAppIcon } from '../components/WhatsAppIcon';
+import { formatDateDDMMYYYY } from '../utils/dateUtils';
 import { 
   Bed, Bath, ArrowLeft, Check, Calendar, Info, Play, Image as ImageIcon, Sparkles,
   ChevronLeft, ChevronRight, X, Maximize2
@@ -377,8 +378,8 @@ export const VillaDetails: React.FC<VillaDetailsProps> = ({ villaId, setCurrentP
               {selectedStart && selectedEnd && (
                 <div className="bg-sand-50/70 border border-sand-100 rounded-2xl p-4.5 space-y-3.5 animate-fade-in-up">
                   <div className="flex justify-between text-xs text-navy-500 font-medium">
-                    <span>Du : <strong className="text-navy-900">{selectedStart}</strong></span>
-                    <span>Au : <strong className="text-navy-900">{selectedEnd}</strong></span>
+                    <span>Du : <strong className="text-navy-900">{formatDateDDMMYYYY(selectedStart)}</strong></span>
+                    <span>Au : <strong className="text-navy-900">{formatDateDDMMYYYY(selectedEnd)}</strong></span>
                   </div>
                   <div className="flex justify-between items-center text-sm font-semibold border-t border-sand-100 pt-3 text-navy-900">
                     <span className="flex items-center space-x-1 font-light text-navy-500">

@@ -4,6 +4,7 @@ import {
   sendOfficialConfirmationEmail, getOfficialMailtoUrl, getOfficialWhatsAppUrl,
   OFFICIAL_SITE_EMAIL, OFFICIAL_SITE_WHATSAPP
 } from '../utils/emailService';
+import { formatDateDDMMYYYY } from '../utils/dateUtils';
 import { 
   Lock, Calendar, FileText, Settings, X, Trash2, ShieldCheck, Info, Plus, Mail, MessageCircle, Send
 } from 'lucide-react';
@@ -306,10 +307,10 @@ export const AdminDashboard: React.FC = () => {
                           {/* Dates */}
                           <td className="px-6 py-4 space-y-1 text-xs">
                             <div className="flex items-center space-x-1 text-navy-950 font-medium">
-                              <span>Du {b.startDate}</span>
+                              <span>Du {formatDateDDMMYYYY(b.startDate)}</span>
                             </div>
                             <div className="flex items-center space-x-1 text-navy-950 font-medium">
-                              <span>Au {b.endDate}</span>
+                              <span>Au {formatDateDDMMYYYY(b.endDate)}</span>
                             </div>
                           </td>
                           {/* Price */}
@@ -649,7 +650,7 @@ export const AdminDashboard: React.FC = () => {
                   </p>
                   <div className="bg-white p-3 rounded-xl border border-sand-150 space-y-1 my-2">
                     <p>• <strong>Résidence :</strong> {emailModalBooking.villaName}</p>
-                    <p>• <strong>Dates du séjour :</strong> Du {emailModalBooking.booking.startDate} au {emailModalBooking.booking.endDate}</p>
+                    <p>• <strong>Dates du séjour :</strong> Du {formatDateDDMMYYYY(emailModalBooking.booking.startDate)} au {formatDateDDMMYYYY(emailModalBooking.booking.endDate)}</p>
                     <p>• <strong>Emplacement :</strong> Jacqueville, Quartier Millionnaire Est</p>
                   </div>
                   <p>

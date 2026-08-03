@@ -1,4 +1,4 @@
-// Service d'envoi automatique d'emails officiels de confirmation pour Palm aura Jacqueville
+import { formatDateDDMMYYYY } from './dateUtils';
 
 export interface ConfirmationEmailParams {
   clientName: string;
@@ -18,13 +18,16 @@ export const OFFICIAL_SITE_WHATSAPP_CLEAN = "2250172707000";
  * au nom de Palm aura (yirekouassi@gmail.com)
  */
 export async function sendOfficialConfirmationEmail(params: ConfirmationEmailParams): Promise<boolean> {
+  const formattedStart = formatDateDDMMYYYY(params.startDate);
+  const formattedEnd = formatDateDDMMYYYY(params.endDate);
+
   const emailPayload = {
     _replyto: OFFICIAL_SITE_EMAIL,
     to: params.clientEmail,
     client_name: params.clientName,
     villa_name: params.villaName,
-    start_date: params.startDate,
-    end_date: params.endDate,
+    start_date: formattedStart,
+    end_date: formattedEnd,
     subject: `Confirmation de réservation - ${params.villaName} | Palm aura Jacqueville`,
     message: `Bonjour ${params.clientName},
 
@@ -32,7 +35,7 @@ Nous avons le plaisir de vous informer que votre demande de réservation pour la
 
 Détails du séjour :
 - Résidence : ${params.villaName}
-- Dates : Du ${params.startDate} au ${params.endDate}
+- Dates : Du ${formattedStart} au ${formattedEnd}
 - Emplacement : Jacqueville, Quartier Millionnaire Est
 
 Pour toute question ou pour préparer votre arrivée, vous pouvez nous joindre directement au ${OFFICIAL_SITE_WHATSAPP} ou par email à ${OFFICIAL_SITE_EMAIL}.
@@ -62,6 +65,9 @@ L'équipe Palm aura Jacqueville`
  * Génère le lien Mailto officiel avec expéditeur yirekouassi@gmail.com
  */
 export function getOfficialMailtoUrl(params: ConfirmationEmailParams): string {
+  const formattedStart = formatDateDDMMYYYY(params.startDate);
+  const formattedEnd = formatDateDDMMYYYY(params.endDate);
+
   const subject = encodeURIComponent(`Confirmation de votre réservation - ${params.villaName} | Palm aura Jacqueville`);
   const body = encodeURIComponent(
 `Bonjour ${params.clientName},
@@ -71,7 +77,7 @@ Nous avons le plaisir de vous informer que votre demande de réservation pour la
 Détails de votre séjour :
 ----------------------------------------
 - Résidence : ${params.villaName}
-- Dates du séjour : Du ${params.startDate} au ${params.endDate}
+- Dates du séjour : Du ${formattedStart} au ${formattedEnd}
 - Emplacement : Jacqueville, Quartier Millionnaire Est
 
 Notre équipe vous attend avec impatience ! Pour préparer votre arrivée ou pour toute question, vous pouvez nous contacter à tout moment par téléphone ou WhatsApp au ${OFFICIAL_SITE_WHATSAPP} ou par email à ${OFFICIAL_SITE_EMAIL}.
@@ -87,6 +93,9 @@ ${OFFICIAL_SITE_EMAIL}`
  * Génère le lien d'envoi WhatsApp officiel depuis le numéro de contact Palm aura +225 01 72 70 70 00
  */
 export function getOfficialWhatsAppUrl(params: ConfirmationEmailParams): string {
+  const formattedStart = formatDateDDMMYYYY(params.startDate);
+  const formattedEnd = formatDateDDMMYYYY(params.endDate);
+
   let cleanClientPhone = params.clientPhone ? params.clientPhone.replace(/\D/g, '') : '';
   if (cleanClientPhone.startsWith('0')) {
     cleanClientPhone = '225' + cleanClientPhone;
@@ -97,7 +106,7 @@ export function getOfficialWhatsAppUrl(params: ConfirmationEmailParams): string 
   const text = encodeURIComponent(
 `Bonjour ${params.clientName},
 
-Nous avons le plaisir de vous informer que votre demande de réservation pour la résidence "${params.villaName}" (du ${params.startDate} au ${params.endDate}) à Jacqueville a été CONFIRMÉE avec succès par l'administration Palm aura !
+Nous avons le plaisir de vous informer que votre demande de réservation pour la résidence "${params.villaName}" (du ${formattedStart} au ${formattedEnd}) à Jacqueville a été CONFIRMÉE avec succès par l'administration Palm aura !
 
 Pour préparer votre arrivée ou pour toute question, vous pouvez nous contacter directement au ${OFFICIAL_SITE_WHATSAPP}.
 
