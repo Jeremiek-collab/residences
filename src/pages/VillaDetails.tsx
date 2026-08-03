@@ -4,7 +4,7 @@ import { BookingCalendar } from '../components/BookingCalendar';
 import { WhatsAppIcon } from '../components/WhatsAppIcon';
 import { 
   Bed, Bath, ArrowLeft, Check, Calendar, Info, Play, Image as ImageIcon, Sparkles,
-  ChevronLeft, ChevronRight, X, Maximize2, Star, MessageSquarePlus
+  ChevronLeft, ChevronRight, X, Maximize2
 } from 'lucide-react';
 
 interface VillaDetailsProps {
@@ -317,9 +317,6 @@ export const VillaDetails: React.FC<VillaDetailsProps> = ({ villaId, setCurrentP
               La villa se situe à <strong>{villa.location}</strong>. Jacqueville offre une faune côtière luxuriante et des spots privilégiés. La route depuis Abidjan se fait via le pont moderne Philippe-Grégoire-Yacé, rendant le trajet fluide et rapide (environ 1h). Le gestionnaire vous guidera précisément pour l'accès.
             </p>
           </div>
-
-          {/* Section Avis clients pour cette villa */}
-          <VillaSpecificReviews villaId={villa.id} villaTitle={villa.title} />
         </div>
 
         {/* Right Column (4 cols in LG) - Reservation Calendar & Form */}
@@ -544,137 +541,6 @@ export const VillaDetails: React.FC<VillaDetailsProps> = ({ villaId, setCurrentP
           </div>
         </div>
       )}
-    </div>
-  );
-};
-
-const VillaSpecificReviews: React.FC<{ villaId: string; villaTitle: string }> = ({ villaId, villaTitle }) => {
-  const { reviews, addReview } = useBookings();
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [rating, setRating] = useState(5);
-  const [name, setName] = useState('');
-  const [location, setLocation] = useState('');
-  const [comment, setComment] = useState('');
-  const [success, setSuccess] = useState(false);
-
-  const villaReviews = reviews.filter(r => !r.residenceId || r.residenceId === villaId);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !comment.trim()) return;
-
-    addReview({
-      name: name.trim(),
-      location: location.trim() || undefined,
-      rating,
-      comment: comment.trim(),
-      residenceId: villaId
-    });
-
-    setSuccess(true);
-    setName('');
-    setLocation('');
-    setComment('');
-    setRating(5);
-
-    setTimeout(() => {
-      setSuccess(false);
-      setIsFormOpen(false);
-    }, 2500);
-  };
-
-  return (
-    <div className="bg-white p-8 rounded-3xl border border-sand-100 shadow-sm space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-sand-100 pb-4">
-        <div>
-          <h3 className="font-serif text-2xl font-bold text-navy-900">Avis sur {villaTitle}</h3>
-          <p className="text-xs text-navy-500 font-light mt-0.5">{villaReviews.length} avis rédigés par nos voyageurs</p>
-        </div>
-        <button
-          onClick={() => setIsFormOpen(!isFormOpen)}
-          className="inline-flex items-center space-x-1.5 bg-navy-900 hover:bg-navy-800 text-white text-xs font-medium py-2.5 px-4 rounded-full shadow-sm transition-all active:scale-95 cursor-pointer"
-        >
-          <MessageSquarePlus className="w-4 h-4 text-[#c5a880]" />
-          <span>{isFormOpen ? "Fermer" : "Rédiger un avis"}</span>
-        </button>
-      </div>
-
-      {isFormOpen && (
-        <form onSubmit={handleSubmit} className="bg-sand-50/80 p-5 rounded-2xl border border-sand-200 space-y-4 animate-fade-in-up">
-          <h4 className="font-serif text-base font-bold text-navy-900">Laissez votre commentaire</h4>
-          {success ? (
-            <div className="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-xs font-medium">
-              ✓ Merci ! Votre avis pour {villaTitle} a été publié avec succès.
-            </div>
-          ) : (
-            <>
-              <div>
-                <label className="text-xs font-semibold text-navy-600 block mb-1">Votre note</label>
-                <div className="flex space-x-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      type="button"
-                      onClick={() => setRating(star)}
-                      className="p-1 focus:outline-none"
-                    >
-                      <Star className={`w-5 h-5 ${rating >= star ? 'text-amber-400 fill-current' : 'text-sand-300'}`} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <input
-                  type="text"
-                  required
-                  placeholder="Votre nom *"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="text-xs py-2.5 px-3 rounded-xl border border-sand-200 bg-white"
-                />
-                <input
-                  type="text"
-                  placeholder="Votre ville (ex: Abidjan)"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  className="text-xs py-2.5 px-3 rounded-xl border border-sand-200 bg-white"
-                />
-              </div>
-              <textarea
-                required
-                rows={2}
-                placeholder="Votre avis sur cette résidence..."
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="w-full text-xs py-2.5 px-3 rounded-xl border border-sand-200 bg-white resize-none"
-              ></textarea>
-              <button
-                type="submit"
-                className="w-full bg-azure-600 hover:bg-azure-500 text-white font-medium py-2.5 rounded-xl text-xs"
-              >
-                Envoyer mon avis
-              </button>
-            </>
-          )}
-        </form>
-      )}
-
-      {/* Reviews list */}
-      <div className="space-y-4">
-        {villaReviews.slice(0, 3).map((rev) => (
-          <div key={rev.id} className="bg-sand-50/50 p-4 rounded-2xl border border-sand-100 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex text-amber-400">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className={`w-3.5 h-3.5 ${i < rev.rating ? 'fill-current' : 'text-sand-200'}`} />
-                ))}
-              </div>
-              <span className="text-[10px] text-navy-400 font-light">{rev.name} {rev.location ? `(${rev.location})` : ''}</span>
-            </div>
-            <p className="text-xs text-navy-700 italic">"{rev.comment}"</p>
-          </div>
-        ))}
-      </div>
     </div>
   );
 };

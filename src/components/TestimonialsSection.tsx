@@ -3,13 +3,12 @@ import { useBookings } from '../context/BookingContext';
 import { Star, MessageSquarePlus, CheckCircle, X, Sparkles } from 'lucide-react';
 
 export const TestimonialsSection: React.FC = () => {
-  const { reviews, addReview, villas } = useBookings();
+  const { reviews, addReview } = useBookings();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
-  const [residenceId, setResidenceId] = useState('');
   const [comment, setComment] = useState('');
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
 
@@ -26,15 +25,13 @@ export const TestimonialsSection: React.FC = () => {
       name: name.trim(),
       location: location.trim() || undefined,
       rating,
-      comment: comment.trim(),
-      residenceId: residenceId || undefined
+      comment: comment.trim()
     });
 
     setSubmittedSuccess(true);
     setName('');
     setLocation('');
     setComment('');
-    setResidenceId('');
     setRating(5);
 
     setTimeout(() => {
@@ -162,25 +159,6 @@ export const TestimonialsSection: React.FC = () => {
                 </div>
               </div>
 
-              {/* Residence selector (optional) */}
-              <div>
-                <label className="text-xs font-semibold text-navy-600 block mb-1">
-                  Résidence concernée (Optionnel)
-                </label>
-                <select
-                  value={residenceId}
-                  onChange={(e) => setResidenceId(e.target.value)}
-                  className="w-full text-xs py-2.5 px-3.5 rounded-xl border border-sand-200 focus:outline-none focus:border-azure-500 text-navy-900 bg-sand-50"
-                >
-                  <option value="">Séjour général chez Palm aura</option>
-                  {villas.map((villa) => (
-                    <option key={villa.id} value={villa.id}>
-                      {villa.title} ({villa.subtitle})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               {/* Comment */}
               <div>
                 <label className="text-xs font-semibold text-navy-600 block mb-1">
@@ -209,51 +187,41 @@ export const TestimonialsSection: React.FC = () => {
 
       {/* Grid of Reviews */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {reviews.map((rev) => {
-          const linkedVilla = rev.residenceId ? villas.find(v => v.id === rev.residenceId) : null;
-          return (
-            <div
-              key={rev.id}
-              className="bg-white/70 backdrop-blur-sm p-8 rounded-3xl border border-[#c5a880]/20 shadow-sm space-y-4 flex flex-col justify-between text-left hover:shadow-md transition-shadow"
-            >
-              <div className="space-y-3">
-                {/* Stars */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-1 text-amber-400">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < rev.rating ? 'fill-current' : 'text-sand-200'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  {linkedVilla && (
-                    <span className="text-[10px] bg-azure-50 text-azure-700 px-2 py-0.5 rounded-full font-medium">
-                      {linkedVilla.title}
-                    </span>
-                  )}
-                </div>
-
-                {/* Comment quote */}
-                <p className="text-sm text-navy-700 leading-relaxed italic font-sans">
-                  "{rev.comment}"
-                </p>
+        {reviews.map((rev) => (
+          <div
+            key={rev.id}
+            className="bg-white/70 backdrop-blur-sm p-8 rounded-3xl border border-[#c5a880]/20 shadow-sm space-y-4 flex flex-col justify-between text-[#0f2027] text-left hover:shadow-md transition-shadow"
+          >
+            <div className="space-y-3">
+              {/* Stars */}
+              <div className="flex items-center space-x-1 text-amber-400">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-4 h-4 ${
+                      i < rev.rating ? 'fill-current' : 'text-sand-200'
+                    }`}
+                  />
+                ))}
               </div>
 
-              {/* Author footer */}
-              <div className="pt-3 border-t border-sand-100 flex items-center justify-between text-xs">
-                <span className="font-semibold text-navy-950 font-sans">
-                  {rev.name} {rev.location ? `(${rev.location})` : ''}
-                </span>
-                <span className="text-navy-400 font-light text-[10px]">
-                  {formatDate(rev.createdAt)}
-                </span>
-              </div>
+              {/* Comment quote */}
+              <p className="text-sm text-navy-700 leading-relaxed italic font-sans">
+                "{rev.comment}"
+              </p>
             </div>
-          );
-        })}
+
+            {/* Author footer */}
+            <div className="pt-3 border-t border-sand-100 flex items-center justify-between text-xs">
+              <span className="font-semibold text-navy-950 font-sans">
+                {rev.name} {rev.location ? `(${rev.location})` : ''}
+              </span>
+              <span className="text-navy-400 font-light text-[10px]">
+                {formatDate(rev.createdAt)}
+              </span>
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );
