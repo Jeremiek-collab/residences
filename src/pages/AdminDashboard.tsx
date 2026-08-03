@@ -1,7 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useBookings } from '../context/BookingContext';
 import { 
-  Lock, Calendar, FileText, Settings, X, Trash2, ShieldCheck, Info, Plus, Mail, MessageCircle
+  sendOfficialConfirmationEmail, getOfficialMailtoUrl, getOfficialWhatsAppUrl,
+  OFFICIAL_SITE_EMAIL, OFFICIAL_SITE_WHATSAPP
+} from '../utils/emailService';
+import { 
+  Lock, Calendar, FileText, Settings, X, Trash2, ShieldCheck, Info, Plus, Mail, MessageCircle, Send
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
@@ -28,6 +32,38 @@ export const AdminDashboard: React.FC = () => {
   // Email Notification Modal State
   const [emailModalBooking, setEmailModalBooking] = useState<{ booking: any; villaName: string } | null>(null);
   const [toastMessage, setToastMessage] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+
+  const triggerDirectEmail = async (b: any, villaName: string) => {
+    updateBookingStatus(b.id, 'confirmed');
+    setIsSendingEmail(true);
+    setToastMessage(`Envoi de l'email officiel depuis ${OFFICIAL_SITE_EMAIL}...`);
+
+    const sent = await sendOfficialConfirmationEmail({
+      clientName: b.clientName,
+      clientEmail: b.clientEmail,
+      clientPhone: b.clientPhone,
+      villaName,
+      startDate: b.startDate,
+      endDate: b.endDate
+    });
+
+    setIsSendingEmail(false);
+    if (sent) {
+      setToastMessage(`✓ Email de confirmation transmis avec succès à ${b.clientEmail} !`);
+    } else {
+      setToastMessage(`📧 Mode de secours : Ouverture de votre messagerie (${OFFICIAL_SITE_EMAIL})...`);
+      window.location.href = getOfficialMailtoUrl({
+        clientName: b.clientName,
+        clientEmail: b.clientEmail,
+        clientPhone: b.clientPhone,
+        villaName,
+        startDate: b.startDate,
+        endDate: b.endDate
+      });
+    }
+    setTimeout(() => setToastMessage(''), 7000);
+  };
 
   // Authentication handler
   const handleLogin = (e: React.FormEvent) => {
@@ -304,28 +340,33 @@ export const AdminDashboard: React.FC = () => {
                               {b.status === 'pending' && (
                                 <div className="flex items-center space-x-1.5">
                                   <button
-                                    onClick={() => {
-                                      updateBookingStatus(b.id, 'confirmed');
-                                      setToastMessage(`📧 Réservation confirmée ! Envoi d'e-mail à ${b.clientEmail}...`);
-                                      window.location.href = getClientConfirmationMailtoUrl(b, villaName);
-                                    }}
-                                    className="px-2.5 py-1.5 bg-azure-600 hover:bg-azure-500 text-white rounded-lg transition-all text-xs font-semibold flex items-center space-x-1 shadow-sm cursor-pointer"
-                                    title="Confirmer et ouvrir l'e-mail pré-rempli pour le client"
+                                    onClick={() => triggerDirectEmail(b, villaName)}
+                                    disabled={isSendingEmail}
+                                    className="px-2.5 py-1.5 bg-azure-600 hover:bg-azure-500 disabled:bg-navy-300 text-white rounded-lg transition-all text-xs font-semibold flex items-center space-x-1 shadow-sm cursor-pointer"
+                                    title={`Confirmer et envoyer l'e-mail officiel depuis ${OFFICIAL_SITE_EMAIL}`}
                                   >
-                                    <Mail className="w-3.5 h-3.5" />
-                                    <span>Mail Client</span>
+                                    <Send className="w-3.5 h-3.5" />
+                                    <span>Envoyer Mail ({OFFICIAL_SITE_EMAIL})</span>
                                   </button>
                                   <button
                                     onClick={() => {
                                       updateBookingStatus(b.id, 'confirmed');
-                                      setToastMessage(`💬 Réservation confirmée ! Ouverture de WhatsApp pour ${b.clientPhone}...`);
-                                      window.open(getClientConfirmationWhatsAppUrl(b, villaName), '_blank');
+                                      setToastMessage(`💬 WhatsApp officiel (${OFFICIAL_SITE_WHATSAPP}) ouvert pour ${b.clientPhone}...`);
+                                      const url = getOfficialWhatsAppUrl({
+                                        clientName: b.clientName,
+                                        clientEmail: b.clientEmail,
+                                        clientPhone: b.clientPhone,
+                                        villaName,
+                                        startDate: b.startDate,
+                                        endDate: b.endDate
+                                      });
+                                      window.open(url, '_blank');
                                     }}
                                     className="px-2.5 py-1.5 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-lg transition-all text-xs font-semibold flex items-center space-x-1 shadow-sm cursor-pointer"
-                                    title="Confirmer et ouvrir WhatsApp pré-rempli pour le client"
+                                    title={`Confirmer et contacter le client depuis le WhatsApp officiel ${OFFICIAL_SITE_WHATSAPP}`}
                                   >
                                     <MessageCircle className="w-3.5 h-3.5 fill-current" />
-                                    <span>WhatsApp</span>
+                                    <span>WhatsApp ({OFFICIAL_SITE_WHATSAPP})</span>
                                   </button>
                                   <button
                                     onClick={() => updateBookingStatus(b.id, 'cancelled')}
@@ -596,6 +637,7 @@ export const AdminDashboard: React.FC = () => {
               {/* Email template preview card */}
               <div className="bg-sand-50/80 rounded-2xl p-5 border border-sand-200 text-xs text-navy-800 space-y-3 font-mono">
                 <div className="border-b border-sand-200 pb-2 space-y-1">
+                  <p><span className="text-navy-400 font-sans font-semibold">De :</span> <strong className="text-azure-700 font-sans">Palm aura Jacqueville &lt;{OFFICIAL_SITE_EMAIL}&gt;</strong></p>
                   <p><span className="text-navy-400 font-sans font-semibold">À :</span> <strong className="text-navy-950 font-sans">{emailModalBooking.booking.clientEmail}</strong></p>
                   <p><span className="text-navy-400 font-sans font-semibold">Objet :</span> <strong className="text-navy-950 font-sans">Confirmation de réservation - {emailModalBooking.villaName} | Palm aura Jacqueville</strong></p>
                 </div>
@@ -611,29 +653,37 @@ export const AdminDashboard: React.FC = () => {
                     <p>• <strong>Emplacement :</strong> Jacqueville, Quartier Millionnaire Est</p>
                   </div>
                   <p>
-                    Pour toute question ou pour finaliser les détails de votre accueil, vous pouvez nous joindre directement par téléphone/WhatsApp au <strong>+225 01 72 70 70 00</strong>.
+                    Pour toute question ou pour finaliser les détails de votre accueil, vous pouvez nous joindre directement par téléphone/WhatsApp au <strong>{OFFICIAL_SITE_WHATSAPP}</strong>.
                   </p>
-                  <p className="pt-2 text-navy-500 font-light italic">Cordialement,<br/>L'équipe Palm aura Jacqueville</p>
+                  <p className="pt-2 text-navy-500 font-light italic">Cordialement,<br/>L'équipe Palm aura Jacqueville ({OFFICIAL_SITE_EMAIL})</p>
                 </div>
               </div>
 
               {/* Modal Actions */}
               <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                <a
-                  href={getClientConfirmationMailtoUrl(emailModalBooking.booking, emailModalBooking.villaName)}
-                  className="flex-1 bg-azure-600 hover:bg-azure-500 text-white py-3 px-4 rounded-xl text-xs font-semibold text-center flex items-center justify-center space-x-2 shadow-md transition-transform active:scale-95"
+                <button
+                  onClick={() => triggerDirectEmail(emailModalBooking.booking, emailModalBooking.villaName)}
+                  disabled={isSendingEmail}
+                  className="flex-1 bg-azure-600 hover:bg-azure-500 disabled:bg-navy-300 text-white py-3 px-4 rounded-xl text-xs font-semibold text-center flex items-center justify-center space-x-2 shadow-md transition-transform active:scale-95 cursor-pointer"
                 >
-                  <Mail className="w-4 h-4" />
-                  <span>Ouvrir mon logiciel de messagerie</span>
-                </a>
+                  <Send className="w-4 h-4" />
+                  <span>Envoyer directement depuis {OFFICIAL_SITE_EMAIL}</span>
+                </button>
                 <a
-                  href={getClientConfirmationWhatsAppUrl(emailModalBooking.booking, emailModalBooking.villaName)}
+                  href={getOfficialWhatsAppUrl({
+                    clientName: emailModalBooking.booking.clientName,
+                    clientEmail: emailModalBooking.booking.clientEmail,
+                    clientPhone: emailModalBooking.booking.clientPhone,
+                    villaName: emailModalBooking.villaName,
+                    startDate: emailModalBooking.booking.startDate,
+                    endDate: emailModalBooking.booking.endDate
+                  })}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex-1 bg-[#25D366] hover:bg-[#20ba5a] text-white py-3 px-4 rounded-xl text-xs font-semibold text-center flex items-center justify-center space-x-2 shadow-md transition-transform active:scale-95"
                 >
                   <MessageCircle className="w-4 h-4 fill-current" />
-                  <span>Transmettre via WhatsApp</span>
+                  <span>WhatsApp Officiel ({OFFICIAL_SITE_WHATSAPP})</span>
                 </a>
               </div>
 
@@ -653,44 +703,4 @@ export const AdminDashboard: React.FC = () => {
   );
 };
 
-function getClientConfirmationMailtoUrl(booking: any, villaName: string): string {
-  const subject = encodeURIComponent(`Confirmation de votre réservation - ${villaName} | Palm aura Jacqueville`);
-  const body = encodeURIComponent(
-`Bonjour ${booking.clientName},
 
-Nous avons le plaisir de vous informer que votre demande de réservation pour la résidence "${villaName}" à Jacqueville a été CONFIRMÉE avec succès !
-
-Détails de votre réservation :
-----------------------------------------
-- Résidence : ${villaName}
-- Dates du séjour : Du ${booking.startDate} au ${booking.endDate}
-- Adresse : Jacqueville, Quartier Millionnaire Est
-
-Notre équipe vous attend avec impatience ! Pour préparer votre arrivée ou pour toute question, vous pouvez nous contacter à tout moment par téléphone ou WhatsApp au +225 01 72 70 70 00 ou par email à yirekouassi@gmail.com.
-
-Cordialement,
-L'équipe Palm aura Jacqueville
-yirekouassi@gmail.com`
-  );
-  return `mailto:${booking.clientEmail}?subject=${subject}&body=${body}`;
-}
-
-function getClientConfirmationWhatsAppUrl(booking: any, villaName: string): string {
-  let cleanPhone = booking.clientPhone ? booking.clientPhone.replace(/\D/g, '') : '';
-  if (cleanPhone.startsWith('0')) {
-    cleanPhone = '225' + cleanPhone;
-  } else if (cleanPhone.length === 10 && !cleanPhone.startsWith('225')) {
-    cleanPhone = '225' + cleanPhone;
-  }
-  const text = encodeURIComponent(
-`Bonjour ${booking.clientName},
-
-Nous avons le plaisir de vous informer que votre demande de réservation pour la résidence "${villaName}" (du ${booking.startDate} au ${booking.endDate}) à Jacqueville a été CONFIRMÉE avec succès par l'administration Palm aura !
-
-Pour préparer votre arrivée ou pour toute question, vous pouvez nous contacter directement au +225 01 72 70 70 00.
-
-Cordialement,
-L'équipe Palm aura Jacqueville`
-  );
-  return `https://wa.me/${cleanPhone}?text=${text}`;
-}
