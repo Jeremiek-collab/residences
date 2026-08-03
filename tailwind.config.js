@@ -2,6 +2,7 @@
 export default {
   content: [
     "./index.html",
+    "./admin.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
@@ -42,6 +43,7 @@ export default {
           700: '#324562',
           800: '#2b3a51',
           900: '#0f2027', // Deep navy
+          950: '#09151c', // Extra deep navy
         }
       },
       fontFamily: {

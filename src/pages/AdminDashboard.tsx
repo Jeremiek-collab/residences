@@ -177,8 +177,8 @@ export const AdminDashboard: React.FC = () => {
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-navy-900">Tableau de Bord Gestionnaire</h1>
-            <p className="text-xs text-navy-500 font-light">Gérez vos locations saisonnières et réservations à Jacqueville.</p>
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-navy-950">Tableau de Bord Gestionnaire</h1>
+            <p className="text-xs text-navy-700 font-semibold mt-0.5">Gérez vos locations saisonnières et réservations à Jacqueville.</p>
           </div>
         </div>
         <button
@@ -224,13 +224,13 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Tabs list */}
-      <div className="flex border-b border-sand-200">
+      <div className="flex border-b border-sand-300">
         <button
           onClick={() => setActiveTab('bookings')}
-          className={`flex items-center space-x-2 py-3 px-6 text-sm font-semibold tracking-wide border-b-2 transition-colors ${
+          className={`flex items-center space-x-2 py-3.5 px-6 text-xs sm:text-sm font-bold tracking-wide border-b-2 transition-colors ${
             activeTab === 'bookings'
-              ? 'border-navy-900 text-navy-900 font-bold'
-              : 'border-transparent text-navy-500 hover:text-navy-900'
+              ? 'border-navy-950 text-navy-950 font-extrabold bg-sand-100/60 rounded-t-xl'
+              : 'border-transparent text-navy-600 hover:text-navy-950'
           }`}
         >
           <FileText className="w-4 h-4" />
@@ -238,10 +238,10 @@ export const AdminDashboard: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveTab('block')}
-          className={`flex items-center space-x-2 py-3 px-6 text-sm font-semibold tracking-wide border-b-2 transition-colors ${
+          className={`flex items-center space-x-2 py-3.5 px-6 text-xs sm:text-sm font-bold tracking-wide border-b-2 transition-colors ${
             activeTab === 'block'
-              ? 'border-navy-900 text-navy-900 font-bold'
-              : 'border-transparent text-navy-500 hover:text-navy-900'
+              ? 'border-navy-950 text-navy-950 font-extrabold bg-sand-100/60 rounded-t-xl'
+              : 'border-transparent text-navy-600 hover:text-navy-950'
           }`}
         >
           <Calendar className="w-4 h-4" />
@@ -249,10 +249,10 @@ export const AdminDashboard: React.FC = () => {
         </button>
         <button
           onClick={() => setActiveTab('catalog')}
-          className={`flex items-center space-x-2 py-3 px-6 text-sm font-semibold tracking-wide border-b-2 transition-colors ${
+          className={`flex items-center space-x-2 py-3.5 px-6 text-xs sm:text-sm font-bold tracking-wide border-b-2 transition-colors ${
             activeTab === 'catalog'
-              ? 'border-navy-900 text-navy-900 font-bold'
-              : 'border-transparent text-navy-500 hover:text-navy-900'
+              ? 'border-navy-950 text-navy-950 font-extrabold bg-sand-100/60 rounded-t-xl'
+              : 'border-transparent text-navy-600 hover:text-navy-950'
           }`}
         >
           <Settings className="w-4 h-4" />
@@ -276,7 +276,7 @@ export const AdminDashboard: React.FC = () => {
             {normalBookings.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-sand-50 text-navy-500 text-xs font-semibold border-b border-sand-100 uppercase tracking-wider">
+                  <thead className="bg-sand-100/90 text-navy-950 text-xs font-bold border-b border-sand-200 uppercase tracking-wider">
                     <tr>
                       <th className="px-6 py-4">Villa</th>
                       <th className="px-6 py-4">Client</th>
