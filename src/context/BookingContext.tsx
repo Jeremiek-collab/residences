@@ -41,6 +41,8 @@ interface BookingContextType {
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
 
+const CLOUD_DB_URL = "https://jsonblob.com/api/jsonBlob/019fd1bb-06cd-709d-994e-711dccb80e79";
+
 export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [villas, setVillas] = useState<Villa[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -66,8 +68,40 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   ];
 
-  // Load initial data
+  // Helper to fetch live cloud bookings
+  const loadCloudBookings = async () => {
+    try {
+      const res = await fetch(CLOUD_DB_URL, {
+        headers: { "Accept": "application/json" }
+      });
+      if (res.ok) {
+        const cloudData = await res.json();
+        if (Array.isArray(cloudData)) {
+          setBookings(cloudData);
+          localStorage.setItem('jacqueville_bookings', JSON.stringify(cloudData));
+        }
+      }
+    } catch (e) {
+      console.warn("Utilisation des données locales pour les réservations (hors-ligne).", e);
+    }
+  };
+
+  // Helper to save bookings to both local storage and cloud database
+  const saveBookings = (newBookings: Booking[]) => {
+    setBookings(newBookings);
+    localStorage.setItem('jacqueville_bookings', JSON.stringify(newBookings));
+    
+    // Sync to cloud asynchronously
+    fetch(CLOUD_DB_URL, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newBookings)
+    }).catch(err => console.warn("Erreur de sauvegarde cloud:", err));
+  };
+
+  // Load initial data & auto-sync from cloud in real time
   useEffect(() => {
+    // 1. Load Villas
     const storedVillas = localStorage.getItem('jacqueville_villas');
     if (storedVillas) {
       try {
@@ -105,42 +139,19 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       localStorage.setItem('jacqueville_villas', JSON.stringify(mockVillas));
     }
 
+    // 2. Load Bookings (first local cache, then live cloud)
     const storedBookings = localStorage.getItem('jacqueville_bookings');
     if (storedBookings) {
-      setBookings(JSON.parse(storedBookings));
-    } else {
-      const initialBookings: Booking[] = [
-        {
-          id: "mock-b1",
-          villaId: "residence-2",
-          clientName: "Jean-Pierre Kouadio",
-          clientEmail: "jp.kouadio@email.com",
-          clientPhone: "+225 0707070707",
-          startDate: getOffsetDateString(2),
-          endDate: getOffsetDateString(5),
-          totalPrice: 750000,
-          status: 'confirmed',
-          notes: "Souhaite un accueil tardif à 19h.",
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: "mock-b2",
-          villaId: "residence-3",
-          clientName: "Marie-Claire Diallo",
-          clientEmail: "mc.diallo@email.com",
-          clientPhone: "+225 0505050505",
-          startDate: getOffsetDateString(8),
-          endDate: getOffsetDateString(12),
-          totalPrice: 1120000,
-          status: 'pending',
-          notes: "Besoin de chaises bébé.",
-          createdAt: new Date().toISOString()
-        }
-      ];
-      setBookings(initialBookings);
-      localStorage.setItem('jacqueville_bookings', JSON.stringify(initialBookings));
+      try {
+        setBookings(JSON.parse(storedBookings));
+      } catch (e) {}
     }
+    loadCloudBookings();
 
+    // Auto-refresh from cloud every 10 seconds so new bookings from clients appear live
+    const intervalId = setInterval(loadCloudBookings, 10000);
+
+    // 3. Load Reviews
     const storedReviews = localStorage.getItem('jacqueville_reviews');
     if (storedReviews) {
       try {
@@ -156,18 +167,9 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setReviews(initialReviews);
       localStorage.setItem('jacqueville_reviews', JSON.stringify(initialReviews));
     }
+
+    return () => clearInterval(intervalId);
   }, []);
-
-  function getOffsetDateString(daysOffset: number): string {
-    const date = new Date();
-    date.setDate(date.getDate() + daysOffset);
-    return date.toISOString().split('T')[0];
-  }
-
-  const saveBookings = (newBookings: Booking[]) => {
-    setBookings(newBookings);
-    localStorage.setItem('jacqueville_bookings', JSON.stringify(newBookings));
-  };
 
   const isDateRangeAvailable = (villaId: string, startDateStr: string, endDateStr: string): boolean => {
     if (!startDateStr || !endDateStr) return false;
@@ -223,31 +225,6 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const updateBookingStatus = (id: string, status: Booking['status']) => {
-    const targetBooking = bookings.find(b => b.id === id);
-    const targetVilla = targetBooking ? villas.find(v => v.id === targetBooking.villaId) : null;
-
-    if (status === 'confirmed' && targetBooking && targetVilla) {
-      console.log(`[SERVICE ENVOI EMAIL CONFIRMATION CLIENT]
-      À: ${targetBooking.clientEmail}
-      Objet: Confirmation de votre réservation - ${targetVilla.title} | Palm aura Jacqueville
-
-      Bonjour ${targetBooking.clientName},
-
-      Nous avons le plaisir de vous informer que votre demande de réservation pour la résidence "${targetVilla.title}" à Jacqueville a été CONFIRMÉE avec succès par le gestionnaire !
-
-      Détails de votre séjour :
-      - Résidence : ${targetVilla.title}
-      - Dates : Du ${targetBooking.startDate} au ${targetBooking.endDate}
-      - Emplacement : ${targetVilla.location}
-
-      Le gestionnaire prendra contact avec vous incessamment au ${targetBooking.clientPhone} ou via WhatsApp au +225 01 72 70 70 00 pour finaliser le dépôt de garantie et préparer votre arrivée.
-
-      Cordialement,
-      L'équipe Palm aura Jacqueville
-      yirekouassi@gmail.com
-      `);
-    }
-
     const updated = bookings.map(b => {
       if (b.id === id) {
         return { ...b, status };
