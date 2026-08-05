@@ -116,7 +116,7 @@ export const VillaDetails: React.FC<VillaDetailsProps> = ({ villaId, setCurrentP
         formData.append('Notes / Demandes', notes || "Aucune note");
         formData.append('Tableau de Bord Gestionnaire', 'https://palmaura-residences.com/admin.html');
 
-        await fetch('https://formsubmit.co/ajax/yirekouassi@gmail.com', {
+        await fetch('https://formsubmit.co/ajax/c875384cc3f2f3da10c20ac2640136db', {
           method: 'POST',
           body: formData
         });
