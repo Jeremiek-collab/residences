@@ -12,7 +12,7 @@ export interface ConfirmationEmailParams {
 export const OFFICIAL_SITE_EMAIL = "yirekouassi@gmail.com";
 export const OFFICIAL_SITE_WHATSAPP = "+225 01 72 70 70 00";
 export const OFFICIAL_SITE_WHATSAPP_CLEAN = "2250172707000";
-export const OFFICIAL_MAPS_LOCATION = "https://maps.google.com/?q=Jacqueville,+Quartier+Millionnaire+Est";
+export const OFFICIAL_MAPS_LOCATION = "https://maps.google.com/?q=R%C3%A9sidences+Palm+Aura+Jacqueville";
 
 /**
  * Envoie un email de confirmation officiel directement à l'adresse du client
