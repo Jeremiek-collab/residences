@@ -12,6 +12,7 @@ export interface ConfirmationEmailParams {
 export const OFFICIAL_SITE_EMAIL = "yirekouassi@gmail.com";
 export const OFFICIAL_SITE_WHATSAPP = "+225 01 72 70 70 00";
 export const OFFICIAL_SITE_WHATSAPP_CLEAN = "2250172707000";
+export const OFFICIAL_MAPS_LOCATION = "https://maps.google.com/?q=Jacqueville,+Quartier+Millionnaire+Est";
 
 /**
  * Envoie un email de confirmation officiel directement à l'adresse du client
@@ -37,6 +38,7 @@ Détails du séjour :
 - Résidence : ${params.villaName}
 - Dates : Du ${formattedStart} au ${formattedEnd}
 - Emplacement : Jacqueville, Quartier Millionnaire Est
+📍 Lien Google Maps : ${OFFICIAL_MAPS_LOCATION}
 
 Pour toute question ou pour préparer votre arrivée, vous pouvez nous joindre directement au ${OFFICIAL_SITE_WHATSAPP} ou par email à ${OFFICIAL_SITE_EMAIL}.
 
@@ -79,6 +81,7 @@ Détails de votre séjour :
 - Résidence : ${params.villaName}
 - Dates du séjour : Du ${formattedStart} au ${formattedEnd}
 - Emplacement : Jacqueville, Quartier Millionnaire Est
+📍 Localisation Google Maps : ${OFFICIAL_MAPS_LOCATION}
 
 Notre équipe vous attend avec impatience ! Pour préparer votre arrivée ou pour toute question, vous pouvez nous contacter à tout moment par téléphone ou WhatsApp au ${OFFICIAL_SITE_WHATSAPP} ou par email à ${OFFICIAL_SITE_EMAIL}.
 
@@ -107,6 +110,9 @@ export function getOfficialWhatsAppUrl(params: ConfirmationEmailParams): string 
 `Bonjour ${params.clientName},
 
 Nous avons le plaisir de vous informer que votre demande de réservation pour la résidence "${params.villaName}" (du ${formattedStart} au ${formattedEnd}) à Jacqueville a été CONFIRMÉE avec succès par l'administration Palm aura !
+
+📍 Localisation Google Maps de la résidence :
+${OFFICIAL_MAPS_LOCATION}
 
 Pour préparer votre arrivée ou pour toute question, vous pouvez nous contacter directement au ${OFFICIAL_SITE_WHATSAPP}.
 

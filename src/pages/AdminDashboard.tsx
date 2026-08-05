@@ -652,6 +652,7 @@ export const AdminDashboard: React.FC = () => {
                     <p>• <strong>Résidence :</strong> {emailModalBooking.villaName}</p>
                     <p>• <strong>Dates du séjour :</strong> Du {formatDateDDMMYYYY(emailModalBooking.booking.startDate)} au {formatDateDDMMYYYY(emailModalBooking.booking.endDate)}</p>
                     <p>• <strong>Emplacement :</strong> Jacqueville, Quartier Millionnaire Est</p>
+                    <p>📍 <strong>Localisation Google Maps :</strong> <a href="https://maps.google.com/?q=Jacqueville,+Quartier+Millionnaire+Est" target="_blank" rel="noopener noreferrer" className="text-azure-600 underline">Jacqueville, Quartier Millionnaire Est</a></p>
                   </div>
                   <p>
                     Pour toute question ou pour finaliser les détails de votre accueil, vous pouvez nous joindre directement par téléphone/WhatsApp au <strong>{OFFICIAL_SITE_WHATSAPP}</strong>.
