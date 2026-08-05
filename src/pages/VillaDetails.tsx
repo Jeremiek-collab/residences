@@ -98,22 +98,23 @@ export const VillaDetails: React.FC<VillaDetailsProps> = ({ villaId, setCurrentP
         notes: notes
       });
 
-      // Envoi de l'alerte e-mail instantanée au gestionnaire
+      // Envoi de l'alerte e-mail instantanée au gestionnaire (yirekouassi@gmail.com)
       try {
         const formData = new FormData();
         formData.append('_subject', `🚨 Nouvelle Réservation : ${villa.title} - Palm aura Jacqueville`);
         formData.append('_captcha', 'false');
         formData.append('_template', 'table');
+        formData.append('_replyto', clientEmail);
         formData.append('Résidence', villa.title);
         formData.append('Nom du Client', clientName);
         formData.append('Email du Client', clientEmail);
         formData.append('Téléphone du Client', clientPhone);
-        formData.append('Date d\'Arrivée', selectedStart);
-        formData.append('Date de Départ', selectedEnd);
+        formData.append('Date d\'Arrivée', formatDateDDMMYYYY(selectedStart));
+        formData.append('Date de Départ', formatDateDDMMYYYY(selectedEnd));
         formData.append('Nombre de nuits', `${nights} nuit(s)`);
         formData.append('Montant Total', `${totalCost.toLocaleString('fr-FR')} FCFA`);
         formData.append('Notes / Demandes', notes || "Aucune note");
-        formData.append('Tableau de Bord Gestionnaire', 'http://localhost:5173/admin.html');
+        formData.append('Tableau de Bord Gestionnaire', 'https://palmaura-residences.com/admin.html');
 
         await fetch('https://formsubmit.co/ajax/yirekouassi@gmail.com', {
           method: 'POST',
