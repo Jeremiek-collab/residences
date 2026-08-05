@@ -326,31 +326,48 @@ export const VillaDetails: React.FC<VillaDetailsProps> = ({ villaId, setCurrentP
           {bookingSuccess ? (
             // Success view
             <div className="bg-emerald-50 border border-emerald-200 p-8 rounded-3xl text-center space-y-6 shadow-sm animate-fade-in-up">
-              <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl shadow-sm">
+              <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl mx-auto mb-2">
                 🎉
               </div>
               <h3 className="font-serif text-xl font-bold text-emerald-900">Demande de réservation reçue !</h3>
               <p className="text-emerald-800 text-sm leading-relaxed font-light">
-                Votre demande de réservation a été soumise avec succès pour la villa <strong>{villa.title}</strong>.
+                Votre demande de réservation a été soumise avec succès pour la résidence <strong>{villa.title}</strong>.
               </p>
+
+              {/* Encadré d'instructions Wave */}
+              <div className="bg-amber-50/90 border border-amber-200 rounded-2xl p-4 text-left text-xs text-navy-800 space-y-2.5 shadow-sm">
+                <div className="flex items-center space-x-2 text-amber-900 font-bold text-sm">
+                  <span>💳 Dépôt de réservation obligatoire</span>
+                </div>
+                <p className="leading-relaxed">
+                  Pour valider définitivement vos dates, vous devez effectuer un dépôt de réservation de <strong className="text-navy-950">20 000 FCFA</strong> (non remboursable) sur le numéro Wave suivant :
+                </p>
+                <div className="bg-white p-3 rounded-xl border border-amber-200 text-center font-mono font-bold text-base text-azure-700 select-all shadow-sm">
+                  📲 Wave : 05 55 78 78 55
+                </div>
+                <p className="text-[11px] text-navy-500 italic leading-normal">
+                  * Indiquez votre nom en référence ou envoyez la capture d'écran du paiement par WhatsApp au <strong className="text-navy-900">+225 01 72 70 70 00</strong>.
+                </p>
+              </div>
+
               <div className="bg-white border border-emerald-100 rounded-2xl p-4 text-left text-xs text-navy-600 space-y-2">
                 <p className="font-semibold text-navy-900 text-sm border-b border-sand-100 pb-2 mb-2">Prochaines étapes :</p>
                 <div className="flex items-start space-x-2">
                   <span className="font-bold text-azure-600">1.</span>
-                  <span>Le gestionnaire va examiner vos dates et vos coordonnées.</span>
+                  <span>Effectuez votre transfert Wave de 20 000 FCFA sur le 05 55 78 78 55.</span>
                 </div>
                 <div className="flex items-start space-x-2">
                   <span className="font-bold text-azure-600">2.</span>
-                  <span>Il vous contactera dans les prochaines 24h (par WhatsApp ou Appel) pour finaliser le dépôt de garantie.</span>
+                  <span>Le gestionnaire valide la réception et confirme votre statut sur le tableau de bord.</span>
                 </div>
                 <div className="flex items-start space-x-2">
                   <span className="font-bold text-azure-600">3.</span>
-                  <span>Une fois le paiement validé, vos dates seront définitivement réservées.</span>
+                  <span>Vous recevrez la confirmation officielle du séjour.</span>
                 </div>
               </div>
               <button
                 onClick={() => setBookingSuccess(false)}
-                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-lg transition-colors active:scale-95 text-sm"
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl transition-colors active:scale-95 text-sm shadow-md"
               >
                 Faire une autre demande
               </button>
