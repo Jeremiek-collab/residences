@@ -7,6 +7,8 @@ export interface ConfirmationEmailParams {
   villaName: string;
   startDate: string;
   endDate: string;
+  totalPrice?: number;
+  advancePaid?: number;
 }
 
 export const OFFICIAL_SITE_EMAIL = "yirekouassi@gmail.com";
@@ -21,6 +23,10 @@ export const OFFICIAL_MAPS_LOCATION = "https://maps.google.com/?q=R%C3%A9sidence
 export async function sendOfficialConfirmationEmail(params: ConfirmationEmailParams): Promise<boolean> {
   const formattedStart = formatDateDDMMYYYY(params.startDate);
   const formattedEnd = formatDateDDMMYYYY(params.endDate);
+
+  const priceInfo = (params.totalPrice !== undefined)
+    ? `\n- Tarif Total du séjour : ${params.totalPrice.toLocaleString('fr-FR')} FCFA\n- Avance reçue : ${(params.advancePaid ?? 0).toLocaleString('fr-FR')} FCFA\n- Reste à payer à l'arrivée : ${Math.max(0, params.totalPrice - (params.advancePaid ?? 0)).toLocaleString('fr-FR')} FCFA`
+    : '';
 
   const emailPayload = {
     _replyto: OFFICIAL_SITE_EMAIL,
@@ -37,7 +43,7 @@ Nous avons le plaisir de vous informer que votre demande de réservation pour la
 Détails du séjour :
 - Résidence : ${params.villaName}
 - Dates : Du ${formattedStart} au ${formattedEnd}
-- Emplacement : Jacqueville, Quartier Millionnaire Est
+- Emplacement : Jacqueville, Quartier Millionnaire Est${priceInfo}
 📍 Lien Google Maps : ${OFFICIAL_MAPS_LOCATION}
 
 Pour toute question ou pour préparer votre arrivée, vous pouvez nous joindre directement au ${OFFICIAL_SITE_WHATSAPP} ou par email à ${OFFICIAL_SITE_EMAIL}.
@@ -70,6 +76,10 @@ export function getOfficialMailtoUrl(params: ConfirmationEmailParams): string {
   const formattedStart = formatDateDDMMYYYY(params.startDate);
   const formattedEnd = formatDateDDMMYYYY(params.endDate);
 
+  const priceInfo = (params.totalPrice !== undefined)
+    ? `\n- Tarif Total : ${params.totalPrice.toLocaleString('fr-FR')} FCFA\n- Avance reçue : ${(params.advancePaid ?? 0).toLocaleString('fr-FR')} FCFA\n- Reste à payer : ${Math.max(0, params.totalPrice - (params.advancePaid ?? 0)).toLocaleString('fr-FR')} FCFA`
+    : '';
+
   const subject = encodeURIComponent(`Confirmation de votre réservation - ${params.villaName} | Palm aura Jacqueville`);
   const body = encodeURIComponent(
 `Bonjour ${params.clientName},
@@ -80,7 +90,7 @@ Détails de votre séjour :
 ----------------------------------------
 - Résidence : ${params.villaName}
 - Dates du séjour : Du ${formattedStart} au ${formattedEnd}
-- Emplacement : Jacqueville, Quartier Millionnaire Est
+- Emplacement : Jacqueville, Quartier Millionnaire Est${priceInfo}
 📍 Localisation Google Maps : ${OFFICIAL_MAPS_LOCATION}
 
 Notre équipe vous attend avec impatience ! Pour préparer votre arrivée ou pour toute question, vous pouvez nous contacter à tout moment par téléphone ou WhatsApp au ${OFFICIAL_SITE_WHATSAPP} ou par email à ${OFFICIAL_SITE_EMAIL}.
@@ -106,11 +116,15 @@ export function getOfficialWhatsAppUrl(params: ConfirmationEmailParams): string 
     cleanClientPhone = '225' + cleanClientPhone;
   }
 
+  const priceInfo = (params.totalPrice !== undefined)
+    ? `\n💰 Tarif Total : ${params.totalPrice.toLocaleString('fr-FR')} FCFA\n✅ Avance reçue : ${(params.advancePaid ?? 0).toLocaleString('fr-FR')} FCFA\n💵 Reste à payer à l'arrivée : ${Math.max(0, params.totalPrice - (params.advancePaid ?? 0)).toLocaleString('fr-FR')} FCFA\n`
+    : '';
+
   const text = encodeURIComponent(
 `Bonjour ${params.clientName},
 
 Nous avons le plaisir de vous informer que votre demande de réservation pour la résidence "${params.villaName}" (du ${formattedStart} au ${formattedEnd}) à Jacqueville a été CONFIRMÉE avec succès par l'administration Palm aura !
-
+${priceInfo}
 📍 Localisation Google Maps de la résidence :
 ${OFFICIAL_MAPS_LOCATION}
 

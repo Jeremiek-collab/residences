@@ -10,6 +10,7 @@ export interface Booking {
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
   totalPrice: number;
+  advancePaid?: number; // Advance payment amount in FCFA
   status: 'pending' | 'confirmed' | 'cancelled';
   notes?: string;
   createdAt: string;
@@ -31,6 +32,7 @@ interface BookingContextType {
   reviews: Review[];
   addBooking: (bookingData: Omit<Booking, 'id' | 'status' | 'createdAt'>) => Promise<Booking>;
   updateBookingStatus: (id: string, status: Booking['status']) => void;
+  updateBookingPricing: (id: string, totalPrice: number, advancePaid: number) => void;
   deleteBooking: (id: string) => void;
   blockDatesManually: (villaId: string, startDate: string, endDate: string, note: string) => void;
   isDateRangeAvailable: (villaId: string, startDateStr: string, endDateStr: string) => boolean;
@@ -214,6 +216,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     const newBooking: Booking = {
       ...bookingData,
+      advancePaid: bookingData.advancePaid ?? 0,
       id: `booking-${Date.now()}`,
       status: 'pending',
       createdAt: new Date().toISOString()
@@ -228,6 +231,16 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const updated = bookings.map(b => {
       if (b.id === id) {
         return { ...b, status };
+      }
+      return b;
+    });
+    saveBookings(updated);
+  };
+
+  const updateBookingPricing = (id: string, totalPrice: number, advancePaid: number) => {
+    const updated = bookings.map(b => {
+      if (b.id === id) {
+        return { ...b, totalPrice, advancePaid };
       }
       return b;
     });
@@ -249,6 +262,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       startDate,
       endDate,
       totalPrice: 0,
+      advancePaid: 0,
       status: 'confirmed',
       notes: note,
       createdAt: new Date().toISOString()
@@ -283,6 +297,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       reviews,
       addBooking,
       updateBookingStatus,
+      updateBookingPricing,
       deleteBooking,
       blockDatesManually,
       isDateRangeAvailable,

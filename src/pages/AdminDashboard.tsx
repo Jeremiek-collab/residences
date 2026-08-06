@@ -6,12 +6,12 @@ import {
 } from '../utils/emailService';
 import { formatDateDDMMYYYY } from '../utils/dateUtils';
 import { 
-  Lock, Calendar, FileText, Settings, X, Trash2, ShieldCheck, Info, Plus, Mail, MessageCircle, Send
+  Lock, Calendar, FileText, Settings, X, Trash2, ShieldCheck, Info, Plus, Mail, MessageCircle, Send, Edit2
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
   const { 
-    villas, bookings, updateBookingStatus, deleteBooking, blockDatesManually 
+    villas, bookings, updateBookingStatus, updateBookingPricing, deleteBooking, blockDatesManually 
   } = useBookings();
 
   // Authentication State
@@ -35,6 +35,11 @@ export const AdminDashboard: React.FC = () => {
   const [toastMessage, setToastMessage] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
 
+  // Pricing Edit Modal State
+  const [editingPricingBooking, setEditingPricingBooking] = useState<any | null>(null);
+  const [editTotalPrice, setEditTotalPrice] = useState<number>(0);
+  const [editAdvancePaid, setEditAdvancePaid] = useState<number>(0);
+
   const triggerDirectEmail = async (b: any, villaName: string) => {
     updateBookingStatus(b.id, 'confirmed');
     setIsSendingEmail(true);
@@ -46,7 +51,9 @@ export const AdminDashboard: React.FC = () => {
       clientPhone: b.clientPhone,
       villaName,
       startDate: b.startDate,
-      endDate: b.endDate
+      endDate: b.endDate,
+      totalPrice: b.totalPrice,
+      advancePaid: b.advancePaid || 0
     });
 
     setIsSendingEmail(false);
@@ -313,9 +320,28 @@ export const AdminDashboard: React.FC = () => {
                               <span>Au {formatDateDDMMYYYY(b.endDate)}</span>
                             </div>
                           </td>
-                          {/* Price */}
-                          <td className="px-6 py-4 font-serif font-bold text-azure-600">
-                            {b.totalPrice.toLocaleString()} FCFA
+                          {/* Price & Advance */}
+                          <td className="px-6 py-4 space-y-1 text-xs">
+                            <div className="font-serif font-bold text-azure-700">
+                              Total : {b.totalPrice.toLocaleString()} FCFA
+                            </div>
+                            <div className="text-emerald-700 font-semibold">
+                              Avance : {(b.advancePaid || 0).toLocaleString()} FCFA
+                            </div>
+                            <div className="text-amber-800 font-bold">
+                              Reste : {Math.max(0, b.totalPrice - (b.advancePaid || 0)).toLocaleString()} FCFA
+                            </div>
+                            <button
+                              onClick={() => {
+                                setEditingPricingBooking(b);
+                                setEditTotalPrice(b.totalPrice);
+                                setEditAdvancePaid(b.advancePaid || 0);
+                              }}
+                              className="inline-flex items-center space-x-1 text-[11px] font-bold text-azure-700 hover:text-azure-900 bg-azure-50 hover:bg-azure-100 px-2 py-1 rounded border border-azure-200 mt-1 cursor-pointer transition-colors"
+                            >
+                              <Edit2 className="w-3 h-3" />
+                              <span>✏️ Modifier tarifs</span>
+                            </button>
                           </td>
                           {/* Status */}
                           <td className="px-6 py-4">
@@ -359,7 +385,9 @@ export const AdminDashboard: React.FC = () => {
                                         clientPhone: b.clientPhone,
                                         villaName,
                                         startDate: b.startDate,
-                                        endDate: b.endDate
+                                        endDate: b.endDate,
+                                        totalPrice: b.totalPrice,
+                                        advancePaid: b.advancePaid || 0
                                       });
                                       window.open(url, '_blank');
                                     }}
@@ -697,6 +725,98 @@ export const AdminDashboard: React.FC = () => {
                   Fermer la fenêtre
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Pricing & Advance Edit Modal */}
+        {editingPricingBooking && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-6 shadow-2xl border border-sand-100 animate-fade-in-up relative text-left">
+              <button
+                onClick={() => setEditingPricingBooking(null)}
+                className="absolute top-5 right-5 text-navy-400 hover:text-navy-950 p-1 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center space-x-3 border-b border-sand-100 pb-4">
+                <div className="w-12 h-12 rounded-2xl bg-azure-50 border border-azure-100 flex items-center justify-center text-azure-600">
+                  <Edit2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-xl font-bold text-navy-950">Modifier Tarifs & Avance</h3>
+                  <p className="text-xs text-navy-500 font-semibold">{editingPricingBooking.clientName}</p>
+                </div>
+              </div>
+
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  updateBookingPricing(editingPricingBooking.id, editTotalPrice, editAdvancePaid);
+                  setEditingPricingBooking(null);
+                  setToastMessage("Tarif total et avance reçue enregistrés avec succès.");
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <label className="text-xs font-bold text-navy-700 block mb-1">
+                    Tarif Total du séjour (FCFA) *
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    value={editTotalPrice}
+                    onChange={(e) => setEditTotalPrice(Number(e.target.value))}
+                    className="w-full text-sm py-2.5 px-3 rounded-xl border border-sand-200 focus:outline-none focus:border-azure-500 font-semibold text-navy-950 bg-sand-50"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-navy-700 block mb-1">
+                    Avance reçue du client (Wave, etc.) (FCFA)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editAdvancePaid}
+                    onChange={(e) => setEditAdvancePaid(Number(e.target.value))}
+                    className="w-full text-sm py-2.5 px-3 rounded-xl border border-sand-200 focus:outline-none focus:border-azure-500 font-semibold text-emerald-700 bg-emerald-50/50"
+                  />
+                </div>
+
+                <div className="bg-sand-50 p-3.5 rounded-xl border border-sand-150 space-y-1 text-xs">
+                  <div className="flex justify-between text-navy-600">
+                    <span>Tarif Total :</span>
+                    <span className="font-bold text-navy-950">{editTotalPrice.toLocaleString()} FCFA</span>
+                  </div>
+                  <div className="flex justify-between text-emerald-700">
+                    <span>Avance reçue :</span>
+                    <span className="font-bold">{editAdvancePaid.toLocaleString()} FCFA</span>
+                  </div>
+                  <div className="flex justify-between text-amber-800 font-bold border-t border-sand-200 pt-1.5 mt-1 text-sm">
+                    <span>Reste à payer :</span>
+                    <span>{Math.max(0, editTotalPrice - editAdvancePaid).toLocaleString()} FCFA</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setEditingPricingBooking(null)}
+                    className="flex-1 py-2.5 px-4 border border-sand-200 rounded-xl text-xs font-semibold text-navy-700 hover:bg-sand-50 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 bg-azure-600 hover:bg-azure-500 text-white py-2.5 px-4 rounded-xl text-xs font-bold transition-transform active:scale-95 shadow-md"
+                  >
+                    Enregistrer
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
