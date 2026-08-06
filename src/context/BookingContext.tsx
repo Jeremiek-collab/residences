@@ -43,7 +43,34 @@ interface BookingContextType {
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
 
-const CLOUD_DB_URL = "https://jsonblob.com/api/jsonBlob/019fd1bb-06cd-709d-994e-711dccb80e79";
+const DEFAULT_CLOUD_DB_URL = "https://jsonblob.com/api/jsonBlob/019fd7ac-31da-712f-bf54-0fc0328594b8";
+
+// Helper to get active Cloud DB URL
+const getCloudUrl = () => {
+  return localStorage.getItem('jacqueville_blob_url') || DEFAULT_CLOUD_DB_URL;
+};
+
+// Create a new blob if expired or missing
+const createNewBlob = async (initialData: Booking[]): Promise<string | null> => {
+  try {
+    const res = await fetch("https://jsonblob.com/api/jsonBlob", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(initialData)
+    });
+    if (res.ok) {
+      const loc = res.headers.get("Location");
+      if (loc) {
+        const fullUrl = loc.startsWith("http") ? loc : `https://jsonblob.com${loc}`;
+        localStorage.setItem('jacqueville_blob_url', fullUrl);
+        return fullUrl;
+      }
+    }
+  } catch (e) {
+    console.warn("Échec de création du nouveau blob cloud:", e);
+  }
+  return null;
+};
 
 export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [villas, setVillas] = useState<Villa[]>([]);
@@ -70,35 +97,77 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   ];
 
+  // Helper to save bookings to both local storage and cloud database
+  const saveBookings = async (newBookings: Booking[]) => {
+    // 1. Save locally immediately
+    setBookings(newBookings);
+    localStorage.setItem('jacqueville_bookings', JSON.stringify(newBookings));
+    
+    // 2. Sync to cloud
+    let currentUrl = getCloudUrl();
+    try {
+      const res = await fetch(currentUrl, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newBookings)
+      });
+
+      if (!res.ok) {
+        // Blob expired (404) or missing -> Create a new active blob with newBookings!
+        await createNewBlob(newBookings);
+      }
+    } catch (err) {
+      console.warn("Erreur de sauvegarde cloud:", err);
+    }
+  };
+
   // Helper to fetch live cloud bookings
   const loadCloudBookings = async () => {
+    let currentUrl = getCloudUrl();
     try {
-      const res = await fetch(CLOUD_DB_URL, {
+      const res = await fetch(currentUrl, {
         headers: { "Accept": "application/json" }
       });
+
       if (res.ok) {
         const cloudData = await res.json();
         if (Array.isArray(cloudData)) {
-          setBookings(cloudData);
-          localStorage.setItem('jacqueville_bookings', JSON.stringify(cloudData));
+          // Read local bookings from localStorage
+          const stored = localStorage.getItem('jacqueville_bookings');
+          const localList: Booking[] = stored ? JSON.parse(stored) : [];
+
+          // Smart merge: Merge cloud items with local items
+          const mergedMap = new Map<string, Booking>();
+          
+          // 1. Add all cloud bookings first
+          cloudData.forEach((b: Booking) => mergedMap.set(b.id, b));
+
+          // 2. Overlay local bookings (preserves manager's manual edits like price, advance, confirmed status)
+          localList.forEach((b: Booking) => {
+            const existing = mergedMap.get(b.id);
+            if (existing) {
+              mergedMap.set(b.id, {
+                ...existing,
+                ...b
+              });
+            } else {
+              mergedMap.set(b.id, b);
+            }
+          });
+
+          const mergedList = Array.from(mergedMap.values());
+          setBookings(mergedList);
+          localStorage.setItem('jacqueville_bookings', JSON.stringify(mergedList));
         }
+      } else if (res.status === 404) {
+        // Blob expired on server -> recreate with current local bookings!
+        const stored = localStorage.getItem('jacqueville_bookings');
+        const localList: Booking[] = stored ? JSON.parse(stored) : [];
+        await createNewBlob(localList);
       }
     } catch (e) {
       console.warn("Utilisation des données locales pour les réservations (hors-ligne).", e);
     }
-  };
-
-  // Helper to save bookings to both local storage and cloud database
-  const saveBookings = (newBookings: Booking[]) => {
-    setBookings(newBookings);
-    localStorage.setItem('jacqueville_bookings', JSON.stringify(newBookings));
-    
-    // Sync to cloud asynchronously
-    fetch(CLOUD_DB_URL, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newBookings)
-    }).catch(err => console.warn("Erreur de sauvegarde cloud:", err));
   };
 
   // Load initial data & auto-sync from cloud in real time
@@ -223,7 +292,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     const updated = [newBooking, ...bookings];
-    saveBookings(updated);
+    await saveBookings(updated);
     return newBooking;
   };
 
