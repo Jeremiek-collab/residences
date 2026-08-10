@@ -11,7 +11,7 @@ import {
 
 export const AdminDashboard: React.FC = () => {
   const { 
-    villas, bookings, updateBookingStatus, updateBookingPricing, deleteBooking, blockDatesManually 
+    villas, bookings, addBooking, updateBookingStatus, updateBookingPricing, deleteBooking, blockDatesManually 
   } = useBookings();
 
   // Authentication State
@@ -39,6 +39,18 @@ export const AdminDashboard: React.FC = () => {
   const [editingPricingBooking, setEditingPricingBooking] = useState<any | null>(null);
   const [editTotalPrice, setEditTotalPrice] = useState<number>(0);
   const [editAdvancePaid, setEditAdvancePaid] = useState<number>(0);
+
+  // Manual Add Booking Modal State
+  const [isAddBookingModalOpen, setIsAddBookingModalOpen] = useState(false);
+  const [newVillaId, setNewVillaId] = useState(villas[0]?.id || 'residence-1');
+  const [newClientName, setNewClientName] = useState('');
+  const [newClientEmail, setNewClientEmail] = useState('');
+  const [newClientPhone, setNewClientPhone] = useState('');
+  const [newStartDate, setNewStartDate] = useState('');
+  const [newEndDate, setNewEndDate] = useState('');
+  const [newTotalPrice, setNewTotalPrice] = useState<number>(30000);
+  const [newAdvancePaid, setNewAdvancePaid] = useState<number>(20000);
+  const [newNotes, setNewNotes] = useState('');
 
   const triggerDirectEmail = async (b: any, villaName: string) => {
     updateBookingStatus(b.id, 'confirmed');
@@ -273,11 +285,20 @@ export const AdminDashboard: React.FC = () => {
         {/* PANEL: Bookings */}
         {activeTab === 'bookings' && (
           <div className="bg-white rounded-3xl border border-sand-100 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-sand-100 bg-sand-50/50">
-              <h3 className="font-serif text-lg font-bold text-navy-900">Demandes de Réservations</h3>
-              <p className="text-xs text-navy-500 leading-normal">
-                Cliquez sur valider pour confirmer la réservation et avertir le client par email. Contactez-le via les informations indiquées pour finaliser les modalités de paiement de caution.
-              </p>
+            <div className="p-6 border-b border-sand-100 bg-sand-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <h3 className="font-serif text-lg font-bold text-navy-900">Demandes de Réservations</h3>
+                <p className="text-xs text-navy-500 leading-normal">
+                  Consultez, confirmez ou ajoutez manuellement vos réservations clients.
+                </p>
+              </div>
+              <button
+                onClick={() => setIsAddBookingModalOpen(true)}
+                className="bg-azure-600 hover:bg-azure-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center space-x-2 shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Ajouter manuellement une réservation</span>
+              </button>
             </div>
             
             {normalBookings.length > 0 ? (
@@ -814,6 +835,200 @@ export const AdminDashboard: React.FC = () => {
                     className="flex-1 bg-azure-600 hover:bg-azure-500 text-white py-2.5 px-4 rounded-xl text-xs font-bold transition-transform active:scale-95 shadow-md"
                   >
                     Enregistrer
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+        {/* Manual Add Booking Modal */}
+        {isAddBookingModalOpen && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl border border-sand-100 animate-fade-in-up relative text-left">
+              <button
+                onClick={() => setIsAddBookingModalOpen(false)}
+                className="absolute top-5 right-5 text-navy-400 hover:text-navy-950 p-1 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center space-x-3 border-b border-sand-100 pb-4">
+                <div className="w-12 h-12 rounded-2xl bg-azure-50 border border-azure-100 flex items-center justify-center text-azure-600">
+                  <Plus className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-xl font-bold text-navy-950">Ajouter une réservation</h3>
+                  <p className="text-xs text-navy-500 font-semibold">Enregistrer un client directement</p>
+                </div>
+              </div>
+
+              <form 
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  try {
+                    await addBooking({
+                      villaId: newVillaId,
+                      clientName: newClientName,
+                      clientEmail: newClientEmail || "client@email.com",
+                      clientPhone: newClientPhone,
+                      startDate: newStartDate,
+                      endDate: newEndDate,
+                      totalPrice: Number(newTotalPrice),
+                      advancePaid: Number(newAdvancePaid),
+                      notes: newNotes
+                    });
+
+                    setIsAddBookingModalOpen(false);
+                    setToastMessage(`Réservation de ${newClientName} ajoutée avec succès.`);
+                    setNewClientName('');
+                    setNewClientEmail('');
+                    setNewClientPhone('');
+                    setNewNotes('');
+                  } catch (err: any) {
+                    alert(err.message || "Erreur lors de l'ajout.");
+                  }
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <label className="text-xs font-bold text-navy-700 block mb-1">
+                    Résidence choisie *
+                  </label>
+                  <select
+                    value={newVillaId}
+                    onChange={(e) => setNewVillaId(e.target.value)}
+                    className="w-full text-sm py-2.5 px-3 rounded-xl border border-sand-200 focus:outline-none focus:border-azure-500 font-semibold text-navy-950 bg-sand-50"
+                  >
+                    {villas.map(v => (
+                      <option key={v.id} value={v.id}>{v.title} ({v.pricePerNight.toLocaleString()} FCFA/nuit)</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-navy-700 block mb-1">
+                      Nom complet du client *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ex: Jean Kouassi"
+                      value={newClientName}
+                      onChange={(e) => setNewClientName(e.target.value)}
+                      className="w-full text-sm py-2.5 px-3 rounded-xl border border-sand-200 focus:outline-none focus:border-azure-500 text-navy-950 bg-sand-50"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-navy-700 block mb-1">
+                      Téléphone / WhatsApp *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="Ex: +225 0102030405"
+                      value={newClientPhone}
+                      onChange={(e) => setNewClientPhone(e.target.value)}
+                      className="w-full text-sm py-2.5 px-3 rounded-xl border border-sand-200 focus:outline-none focus:border-azure-500 text-navy-950 bg-sand-50"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-navy-700 block mb-1">
+                    Adresse e-mail (Optionnel)
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="client@email.com"
+                    value={newClientEmail}
+                    onChange={(e) => setNewClientEmail(e.target.value)}
+                    className="w-full text-sm py-2.5 px-3 rounded-xl border border-sand-200 focus:outline-none focus:border-azure-500 text-navy-950 bg-sand-50"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-navy-700 block mb-1">
+                      Date d'arrivée *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={newStartDate}
+                      onChange={(e) => setNewStartDate(e.target.value)}
+                      className="w-full text-sm py-2.5 px-3 rounded-xl border border-sand-200 focus:outline-none focus:border-azure-500 text-navy-950 bg-sand-50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-navy-700 block mb-1">
+                      Date de départ *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={newEndDate}
+                      onChange={(e) => setNewEndDate(e.target.value)}
+                      className="w-full text-sm py-2.5 px-3 rounded-xl border border-sand-200 focus:outline-none focus:border-azure-500 text-navy-950 bg-sand-50"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-navy-700 block mb-1">
+                      Tarif Total (FCFA) *
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      required
+                      value={newTotalPrice}
+                      onChange={(e) => setNewTotalPrice(Number(e.target.value))}
+                      className="w-full text-sm py-2.5 px-3 rounded-xl border border-sand-200 focus:outline-none focus:border-azure-500 font-semibold text-navy-950 bg-sand-50"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-navy-700 block mb-1">
+                      Avance reçue (FCFA)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={newAdvancePaid}
+                      onChange={(e) => setNewAdvancePaid(Number(e.target.value))}
+                      className="w-full text-sm py-2.5 px-3 rounded-xl border border-sand-200 focus:outline-none focus:border-azure-500 font-semibold text-emerald-700 bg-emerald-50/50"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-navy-700 block mb-1">
+                    Notes / Remarques
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Caution versée par Wave"
+                    value={newNotes}
+                    onChange={(e) => setNewNotes(e.target.value)}
+                    className="w-full text-sm py-2.5 px-3 rounded-xl border border-sand-200 focus:outline-none focus:border-azure-500 text-navy-950 bg-sand-50"
+                  />
+                </div>
+
+                <div className="pt-2 flex space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddBookingModalOpen(false)}
+                    className="flex-1 py-2.5 px-4 border border-sand-200 rounded-xl text-xs font-semibold text-navy-700 hover:bg-sand-50 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 bg-azure-600 hover:bg-azure-500 text-white py-2.5 px-4 rounded-xl text-xs font-bold transition-transform active:scale-95 shadow-md"
+                  >
+                    Enregistrer la réservation
                   </button>
                 </div>
               </form>
