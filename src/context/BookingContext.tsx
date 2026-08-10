@@ -101,10 +101,39 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       });
 
       if (res.ok) {
-        const cloudData = await res.json();
+        const cloudData: Booking[] = await res.json();
         if (Array.isArray(cloudData)) {
-          setBookings(cloudData);
-          localStorage.setItem('jacqueville_bookings', JSON.stringify(cloudData));
+          // Read local cache from localStorage
+          const stored = localStorage.getItem('jacqueville_bookings');
+          let localList: Booking[] = [];
+          if (stored) {
+            try { localList = JSON.parse(stored); } catch (e) {}
+          }
+
+          // Union merge cloudData and localList by unique id
+          const map = new Map<string, Booking>();
+          cloudData.forEach(b => map.set(b.id, b));
+          localList.forEach(b => {
+            if (!map.has(b.id)) {
+              map.set(b.id, b);
+            } else {
+              const existing = map.get(b.id)!;
+              map.set(b.id, { ...existing, ...b });
+            }
+          });
+
+          const merged = Array.from(map.values());
+          setBookings(merged);
+          localStorage.setItem('jacqueville_bookings', JSON.stringify(merged));
+
+          // If localList had items missing from cloud, sync back to master DB
+          if (merged.length > cloudData.length) {
+            fetch(MASTER_CLOUD_DB_URL, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(merged)
+            }).catch(() => {});
+          }
         }
       }
     } catch (e) {
