@@ -52,6 +52,25 @@ export const AdminDashboard: React.FC = () => {
   const [newAdvancePaid, setNewAdvancePaid] = useState<number>(20000);
   const [newNotes, setNewNotes] = useState('');
 
+  // Auto-calculate total price based on selected nights and villa price per night
+  const calculatedNights = useMemo(() => {
+    if (!newStartDate || !newEndDate) return 0;
+    const start = new Date(newStartDate);
+    const end = new Date(newEndDate);
+    const diffTime = end.getTime() - start.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  }, [newStartDate, newEndDate]);
+
+  React.useEffect(() => {
+    if (calculatedNights > 0 && newVillaId) {
+      const selectedVilla = villas.find(v => v.id === newVillaId);
+      if (selectedVilla) {
+        setNewTotalPrice(calculatedNights * selectedVilla.pricePerNight);
+      }
+    }
+  }, [calculatedNights, newVillaId, villas]);
+
   const triggerDirectEmail = async (b: any, villaName: string) => {
     updateBookingStatus(b.id, 'confirmed');
     setIsSendingEmail(true);
@@ -983,7 +1002,7 @@ export const AdminDashboard: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-bold text-navy-700 block mb-1">
-                      Tarif Total (FCFA) *
+                      Tarif Total (FCFA) {calculatedNights > 0 && <span className="text-[11px] text-azure-600 font-normal">({calculatedNights} nuit{calculatedNights > 1 ? 's' : ''})</span>} *
                     </label>
                     <input
                       type="number"
