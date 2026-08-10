@@ -40,6 +40,9 @@ export const AdminDashboard: React.FC = () => {
   const [editTotalPrice, setEditTotalPrice] = useState<number>(0);
   const [editAdvancePaid, setEditAdvancePaid] = useState<number>(0);
 
+  // Sorting State
+  const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'stayStart'>('newest');
+
   // Manual Add Booking Modal State
   const [isAddBookingModalOpen, setIsAddBookingModalOpen] = useState(false);
   const [newVillaId, setNewVillaId] = useState(villas[0]?.id || 'residence-1');
@@ -150,10 +153,29 @@ export const AdminDashboard: React.FC = () => {
     return { total, pending, confirmed, revenue };
   }, [bookings]);
 
-  // Split normal bookings and admin blockings
+  // Split normal bookings and admin blockings with sorting
   const normalBookings = useMemo(() => {
-    return bookings.filter(b => b.clientEmail !== 'admin@residences.com');
-  }, [bookings]);
+    const list = bookings.filter(b => b.clientEmail !== 'admin@residences.com');
+
+    return [...list].sort((a, b) => {
+      if (sortOrder === 'newest') {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeB - timeA;
+      }
+      if (sortOrder === 'oldest') {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return timeA - timeB;
+      }
+      if (sortOrder === 'stayStart') {
+        const timeA = a.startDate ? new Date(a.startDate).getTime() : 0;
+        const timeB = b.startDate ? new Date(b.startDate).getTime() : 0;
+        return timeA - timeB;
+      }
+      return 0;
+    });
+  }, [bookings, sortOrder]);
 
   const adminBlockings = useMemo(() => {
     return bookings.filter(b => b.clientEmail === 'admin@residences.com' && b.status !== 'cancelled');
@@ -303,16 +325,32 @@ export const AdminDashboard: React.FC = () => {
               <div>
                 <h3 className="font-serif text-lg font-bold text-navy-900">Demandes de Réservations</h3>
                 <p className="text-xs text-navy-500 leading-normal">
-                  Consultez, confirmez ou ajoutez manuellement vos réservations clients.
+                  Consultez, confirmez, triez ou ajoutez manuellement vos réservations clients.
                 </p>
               </div>
-              <button
-                onClick={() => setIsAddBookingModalOpen(true)}
-                className="bg-azure-600 hover:bg-azure-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center space-x-2 shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Ajouter manuellement une réservation</span>
-              </button>
+              
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <div className="flex items-center space-x-1.5 text-xs bg-white px-3 py-2 rounded-xl border border-sand-200 shadow-sm">
+                  <span className="font-bold text-navy-600 shrink-0">Trier par :</span>
+                  <select
+                    value={sortOrder}
+                    onChange={(e: any) => setSortOrder(e.target.value)}
+                    className="bg-transparent text-navy-950 font-bold focus:outline-none cursor-pointer"
+                  >
+                    <option value="newest">🕒 Date de demande (Plus récents)</option>
+                    <option value="oldest">⏳ Date de demande (Plus anciens)</option>
+                    <option value="stayStart">📅 Date de séjour (Arrivée imminente)</option>
+                  </select>
+                </div>
+
+                <button
+                  onClick={() => setIsAddBookingModalOpen(true)}
+                  className="bg-azure-600 hover:bg-azure-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center space-x-2 shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Ajouter manuellement une réservation</span>
+                </button>
+              </div>
             </div>
             
             {normalBookings.length > 0 ? (
