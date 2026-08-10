@@ -153,32 +153,35 @@ export const AdminDashboard: React.FC = () => {
     return { total, pending, confirmed, revenue };
   }, [bookings]);
 
-  // Split normal bookings and admin blockings with sorting
+  // Split normal bookings and admin blockings with sorting & safe guards
   const normalBookings = useMemo(() => {
-    const list = bookings.filter(b => b.clientEmail !== 'admin@residences.com');
+    if (!Array.isArray(bookings)) return [];
+    const list = bookings.filter(b => b && typeof b === 'object' && b.clientEmail !== 'admin@residences.com');
 
     return [...list].sort((a, b) => {
+      if (!a || !b) return 0;
       if (sortOrder === 'newest') {
         const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return timeB - timeA;
+        return (isNaN(timeB) ? 0 : timeB) - (isNaN(timeA) ? 0 : timeA);
       }
       if (sortOrder === 'oldest') {
         const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return timeA - timeB;
+        return (isNaN(timeA) ? 0 : timeA) - (isNaN(timeB) ? 0 : timeB);
       }
       if (sortOrder === 'stayStart') {
         const timeA = a.startDate ? new Date(a.startDate).getTime() : 0;
         const timeB = b.startDate ? new Date(b.startDate).getTime() : 0;
-        return timeA - timeB;
+        return (isNaN(timeA) ? 0 : timeA) - (isNaN(timeB) ? 0 : timeB);
       }
       return 0;
     });
   }, [bookings, sortOrder]);
 
   const adminBlockings = useMemo(() => {
-    return bookings.filter(b => b.clientEmail === 'admin@residences.com' && b.status !== 'cancelled');
+    if (!Array.isArray(bookings)) return [];
+    return bookings.filter(b => b && typeof b === 'object' && b.clientEmail === 'admin@residences.com' && b.status !== 'cancelled');
   }, [bookings]);
 
   if (!isAuthenticated) {
