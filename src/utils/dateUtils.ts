@@ -40,3 +40,22 @@ export function formatDateDDMMYYYY(dateInput: string | Date | undefined | null):
 
   return String(dateInput);
 }
+
+/**
+ * Formatage universel avec Heure : JJ/MM/AAAA à HH:mm
+ */
+export function formatDateTimeDDMMYYYY(dateInput: string | Date | undefined | null): string {
+  if (!dateInput) return '';
+  try {
+    const d = new Date(dateInput);
+    if (!isNaN(d.getTime())) {
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${day}/${month}/${year} à ${hours}:${minutes}`;
+    }
+  } catch (e) {}
+  return formatDateDDMMYYYY(dateInput);
+}

@@ -4,7 +4,7 @@ import {
   sendOfficialConfirmationEmail, getOfficialMailtoUrl, getOfficialWhatsAppUrl,
   OFFICIAL_SITE_EMAIL, OFFICIAL_SITE_WHATSAPP, OFFICIAL_MAPS_LOCATION
 } from '../utils/emailService';
-import { formatDateDDMMYYYY } from '../utils/dateUtils';
+import { formatDateDDMMYYYY, formatDateTimeDDMMYYYY } from '../utils/dateUtils';
 import { 
   Lock, Calendar, FileText, Settings, X, Trash2, ShieldCheck, Info, Plus, Mail, MessageCircle, Send, Edit2
 } from 'lucide-react';
@@ -334,12 +334,17 @@ export const AdminDashboard: React.FC = () => {
                           </td>
                           {/* Dates */}
                           <td className="px-6 py-4 space-y-1 text-xs">
-                            <div className="flex items-center space-x-1 text-navy-950 font-medium">
+                            <div className="flex items-center space-x-1 text-navy-950 font-semibold">
                               <span>Du {formatDateDDMMYYYY(b.startDate)}</span>
                             </div>
-                            <div className="flex items-center space-x-1 text-navy-950 font-medium">
+                            <div className="flex items-center space-x-1 text-navy-950 font-semibold">
                               <span>Au {formatDateDDMMYYYY(b.endDate)}</span>
                             </div>
+                            {b.createdAt && (
+                              <div className="text-[11px] text-navy-500 font-normal italic pt-1 border-t border-sand-100 mt-1">
+                                Demandée le : {formatDateTimeDDMMYYYY(b.createdAt)}
+                              </div>
+                            )}
                           </td>
                           {/* Price & Advance */}
                           <td className="px-6 py-4 space-y-1 text-xs">
