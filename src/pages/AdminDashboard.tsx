@@ -4,7 +4,7 @@ import {
   sendOfficialConfirmationEmail, getOfficialMailtoUrl, getOfficialWhatsAppUrl,
   OFFICIAL_SITE_EMAIL, OFFICIAL_SITE_WHATSAPP, OFFICIAL_MAPS_LOCATION
 } from '../utils/emailService';
-import { formatDateDDMMYYYY, formatDateTimeDDMMYYYY } from '../utils/dateUtils';
+import { formatDateDDMMYYYY, formatDateTimeDDMMYYYY, calculateNightsBetween } from '../utils/dateUtils';
 import { 
   Lock, Calendar, FileText, Settings, X, Trash2, ShieldCheck, Info, Plus, Mail, MessageCircle, Send, Edit2
 } from 'lucide-react';
@@ -54,12 +54,7 @@ export const AdminDashboard: React.FC = () => {
 
   // Auto-calculate total price based on selected nights and villa price per night
   const calculatedNights = useMemo(() => {
-    if (!newStartDate || !newEndDate) return 0;
-    const start = new Date(newStartDate);
-    const end = new Date(newEndDate);
-    const diffTime = end.getTime() - start.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays > 0 ? diffDays : 0;
+    return calculateNightsBetween(newStartDate, newEndDate);
   }, [newStartDate, newEndDate]);
 
   React.useEffect(() => {

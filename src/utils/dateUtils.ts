@@ -59,3 +59,38 @@ export function formatDateTimeDDMMYYYY(dateInput: string | Date | undefined | nu
   } catch (e) {}
   return formatDateDDMMYYYY(dateInput);
 }
+
+/**
+ * Analyse universelle des dates (compatible YYYY-MM-DD et JJ/MM/AAAA)
+ */
+function parseFlexibleDate(dateStr: string): Date | null {
+  if (!dateStr) return null;
+  const str = dateStr.trim();
+
+  // YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    const [y, m, d] = str.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  // DD/MM/YYYY ou DD-MM-YYYY
+  if (/^\d{2}[\/\-]\d{2}[\/\-]\d{4}$/.test(str)) {
+    const parts = str.split(/[\/\-]/).map(Number);
+    return new Date(parts[2], parts[1] - 1, parts[0]);
+  }
+
+  const d = new Date(str);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+/**
+ * Calcule exactement le nombre de nuits entre deux dates (quelle que soit leur écriture)
+ */
+export function calculateNightsBetween(startStr: string, endStr: string): number {
+  const start = parseFlexibleDate(startStr);
+  const end = parseFlexibleDate(endStr);
+  if (!start || !end) return 0;
+  const diffMs = end.getTime() - start.getTime();
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+  return diffDays > 0 ? diffDays : 0;
+}
