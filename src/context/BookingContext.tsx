@@ -44,7 +44,7 @@ interface BookingContextType {
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
 
 // MASTER SINGLE CENTRAL DATABASE ENDPOINT shared across all phones, tablets, and computers worldwide
-const MASTER_CLOUD_DB_URL = "https://jsonblob.com/api/jsonBlob/019fece9-eeaf-75e0-929d-9fcfd0e08c94";
+const MASTER_CLOUD_DB_URL = "https://jsonblob.com/api/jsonBlob/019ff313-3e9a-716a-a522-cc225022ab36";
 
 export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [villas, setVillas] = useState<Villa[]>([]);
