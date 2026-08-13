@@ -55,6 +55,49 @@ export const AdminDashboard: React.FC = () => {
   const [newAdvancePaid, setNewAdvancePaid] = useState<number>(20000);
   const [newNotes, setNewNotes] = useState('');
 
+  // Email Import Modal State
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importRawText, setImportRawText] = useState('');
+
+  // Auto-import booking from URL query parameters (e.g. from notification emails)
+  React.useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const villaId = params.get('villaId') || params.get('villa') || params.get('residence');
+      const clientName = params.get('clientName') || params.get('name') || params.get('client');
+      const clientPhone = params.get('clientPhone') || params.get('phone') || params.get('tel');
+      const clientEmail = params.get('clientEmail') || params.get('email') || '';
+      const startDate = params.get('startDate') || params.get('start') || params.get('dateStart');
+      const endDate = params.get('endDate') || params.get('end') || params.get('dateEnd');
+      const totalPrice = params.get('totalPrice') || params.get('price') || params.get('tarif');
+      const notes = params.get('notes') || params.get('note') || '';
+
+      if (clientName && (villaId || startDate)) {
+        const exists = bookings.some(b => 
+          b.clientName.toLowerCase().trim() === clientName.toLowerCase().trim() &&
+          (b.startDate === startDate || (clientPhone ? b.clientPhone === clientPhone : false))
+        );
+
+        if (!exists) {
+          addBooking({
+            villaId: villaId || 'residence-1',
+            clientName: clientName.trim(),
+            clientEmail: clientEmail.trim() || 'client@email.com',
+            clientPhone: clientPhone ? clientPhone.trim() : 'Non renseigné',
+            startDate: startDate || new Date().toISOString().split('T')[0],
+            endDate: endDate || new Date(Date.now() + 86400000).toISOString().split('T')[0],
+            totalPrice: totalPrice ? Number(totalPrice) : 30000,
+            advancePaid: 0,
+            notes: notes ? `Importé via lien e-mail : ${notes}` : 'Importé automatiquement via lien e-mail'
+          }).then(() => {
+            setToastMessage(`✓ Réservation de ${clientName} importée avec succès depuis le lien e-mail !`);
+            window.history.replaceState({}, document.title, window.location.pathname);
+          });
+        }
+      }
+    } catch (err) {}
+  }, [bookings]);
+
   // Auto-calculate total price based on selected nights and villa price per night
   const calculatedNights = useMemo(() => {
     return calculateNightsBetween(newStartDate, newEndDate);
@@ -347,11 +390,19 @@ export const AdminDashboard: React.FC = () => {
                 </div>
 
                 <button
+                  onClick={() => setIsImportModalOpen(true)}
+                  className="bg-amber-600 hover:bg-amber-500 text-white font-bold px-3.5 py-2.5 rounded-xl text-xs flex items-center space-x-2 shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
+                >
+                  <Mail className="w-4 h-4" />
+                  <span>Importer un mail</span>
+                </button>
+
+                <button
                   onClick={() => setIsAddBookingModalOpen(true)}
                   className="bg-azure-600 hover:bg-azure-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center space-x-2 shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Ajouter manuellement une réservation</span>
+                  <span>Ajouter manuellement</span>
                 </button>
               </div>
             </div>
@@ -1092,6 +1143,126 @@ export const AdminDashboard: React.FC = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+        {/* Email Import Modal */}
+        {isImportModalOpen && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl border border-sand-100 animate-fade-in-up relative text-left">
+              <button
+                onClick={() => setIsImportModalOpen(false)}
+                className="absolute top-5 right-5 text-navy-400 hover:text-navy-950 p-1 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center space-x-3 border-b border-sand-100 pb-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
+                  <Mail className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-xl font-bold text-navy-950">Importer un e-mail / lien</h3>
+                  <p className="text-xs text-navy-500 font-semibold">Collez le texte du mail ou le lien reçu</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-navy-700 block mb-1">
+                    Collez le contenu ou le lien de l'e-mail ici :
+                  </label>
+                  <textarea
+                    rows={6}
+                    placeholder="Collez le texte du mail reçu (ex: Nom du client, Téléphone, Dates, Résidence, Montant...) ou collez directement le lien du mail..."
+                    value={importRawText}
+                    onChange={(e) => setImportRawText(e.target.value)}
+                    className="w-full text-xs p-3 rounded-xl border border-sand-200 focus:outline-none focus:border-amber-500 text-navy-950 bg-sand-50 font-mono leading-relaxed"
+                  />
+                </div>
+
+                <div className="flex space-x-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsImportModalOpen(false)}
+                    className="flex-1 py-2.5 px-4 border border-sand-200 rounded-xl text-xs font-semibold text-navy-700 hover:bg-sand-50 transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!importRawText.trim()) return;
+
+                      // Extract link or URL query parameters if link was pasted
+                      let text = importRawText;
+                      let villaId = 'residence-1';
+                      let clientName = '';
+                      let clientPhone = '';
+                      let clientEmail = '';
+                      let startDate = new Date().toISOString().split('T')[0];
+                      let endDate = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+                      let totalPrice = 30000;
+
+                      if (text.includes('http')) {
+                        try {
+                          const urlObj = new URL(text.substring(text.indexOf('http')));
+                          const p = urlObj.searchParams;
+                          villaId = p.get('villaId') || p.get('villa') || villaId;
+                          clientName = p.get('clientName') || p.get('name') || clientName;
+                          clientPhone = p.get('clientPhone') || p.get('phone') || clientPhone;
+                          clientEmail = p.get('clientEmail') || p.get('email') || clientEmail;
+                          startDate = p.get('startDate') || p.get('start') || startDate;
+                          endDate = p.get('endDate') || p.get('end') || endDate;
+                          totalPrice = p.get('totalPrice') ? Number(p.get('totalPrice')) : totalPrice;
+                        } catch (e) {}
+                      }
+
+                      // Regex extraction for email text
+                      const nameMatch = text.match(/(?:Nom|Client)\s*[:=]\s*([^\n\r,]+)/i);
+                      if (nameMatch && !clientName) clientName = nameMatch[1].trim();
+
+                      const phoneMatch = text.match(/(?:Téléphone|Tel|Phone|WhatsApp)\s*[:=]\s*([^\n\r,]+)/i);
+                      if (phoneMatch && !clientPhone) clientPhone = phoneMatch[1].trim();
+
+                      const emailMatch = text.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+)/i);
+                      if (emailMatch && !clientEmail) clientEmail = emailMatch[1].trim();
+
+                      const priceMatch = text.match(/(?:Montant|Tarif|Total)\s*[:=]\s*([0-9\s]+)/i);
+                      if (priceMatch && priceMatch[1].replace(/\s/g, '')) {
+                        totalPrice = Number(priceMatch[1].replace(/\s/g, ''));
+                      }
+
+                      const villaMatch = text.match(/(?:Résidence|Villa)\s*[:=]\s*([^\n\r,]+)/i);
+                      if (villaMatch) {
+                        const foundV = villas.find(v => v.title.toLowerCase().includes(villaMatch[1].trim().toLowerCase()));
+                        if (foundV) villaId = foundV.id;
+                      }
+
+                      if (!clientName) clientName = "Client Mail Importé";
+
+                      await addBooking({
+                        villaId,
+                        clientName,
+                        clientEmail: clientEmail || "client@email.com",
+                        clientPhone: clientPhone || "Non renseigné",
+                        startDate,
+                        endDate,
+                        totalPrice,
+                        advancePaid: 0,
+                        notes: "Importé depuis le contenu e-mail"
+                      });
+
+                      setIsImportModalOpen(false);
+                      setImportRawText('');
+                      setToastMessage(`✓ Réservation de ${clientName} importée avec succès !`);
+                    }}
+                    className="flex-1 bg-amber-600 hover:bg-amber-500 text-white py-2.5 px-4 rounded-xl text-xs font-bold transition-transform active:scale-95 shadow-md"
+                  >
+                    Importer & Enregistrer
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

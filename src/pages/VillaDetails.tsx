@@ -113,8 +113,8 @@ export const VillaDetails: React.FC<VillaDetailsProps> = ({ villaId, setCurrentP
         formData.append('Date de Départ', formatDateDDMMYYYY(selectedEnd));
         formData.append('Nombre de nuits', `${nights} nuit(s)`);
         formData.append('Montant Total', `${totalCost.toLocaleString('fr-FR')} FCFA`);
-        formData.append('Notes / Demandes', notes || "Aucune note");
-        formData.append('Tableau de Bord Gestionnaire', 'https://palmaura-residences.com/admin.html');
+        const directImportUrl = `https://palmaura-residences.com/admin.html?action=import&villaId=${villa.id}&clientName=${encodeURIComponent(clientName)}&clientEmail=${encodeURIComponent(clientEmail)}&clientPhone=${encodeURIComponent(clientPhone)}&startDate=${selectedStart}&endDate=${selectedEnd}&totalPrice=${totalCost}&notes=${encodeURIComponent(notes || '')}`;
+        formData.append('Tableau de Bord Gestionnaire (Cliquez ici pour réimporter)', directImportUrl);
 
         await fetch('https://formsubmit.co/ajax/c875384cc3f2f3da10c20ac2640136db', {
           method: 'POST',
