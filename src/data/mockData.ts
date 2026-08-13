@@ -29,7 +29,7 @@ export const mockVillas: Villa[] = [
     featured: true,
     amenities: ["Wi-Fi Haut Débit", "Climatisation", "Télévision HD", "Chauffe-eau", "Cuisine équipée", "Canal+"],
     videoUrl: "/residence-1/video_main.mp4",
-    imageUrl: "/residence-1/photo_1.jpg",
+    imageUrl: "/residence-1/photo_1.jpg?v=20260813",
     images: [
       "/residence-1/photo_1.jpg",
       "/residence-1/photo_2.jpg",
@@ -51,7 +51,7 @@ export const mockVillas: Villa[] = [
     featured: true,
     amenities: ["Wi-Fi Haut Débit", "Climatisation", "Télévision HD", "Chauffe-eau", "Cuisine équipée"],
     videoUrl: "/residence-2/video_main.mp4",
-    imageUrl: "/residence-2/photo_1.jpg",
+    imageUrl: "/residence-2/photo_1.jpg?v=20260813",
     images: [
       "/residence-2/photo_1.jpg",
       "/residence-2/photo_2.jpg",
@@ -72,7 +72,7 @@ export const mockVillas: Villa[] = [
     featured: true,
     amenities: ["Wi-Fi Haut Débit", "Climatisation", "Télévision HD", "Chauffe-eau", "Cuisine équipée"],
     videoUrl: "/residence-3/video_main.mp4",
-    imageUrl: "/residence-3/photo_1.jpg",
+    imageUrl: "/residence-3/photo_1.jpg?v=20260813",
     images: [
       "/residence-3/photo_1.jpg",
       "/residence-3/photo_2.jpg",
@@ -92,7 +92,7 @@ export const mockVillas: Villa[] = [
     featured: true,
     amenities: ["Wi-Fi Haut Débit", "Climatisation", "Télévision HD", "Chauffe-eau", "Cuisine équipée"],
     videoUrl: "/residence-4/video_main.mp4",
-    imageUrl: "/residence-4/photo_1.jpg",
+    imageUrl: "/residence-4/photo_1.jpg?v=20260813",
     images: [
       "/residence-4/photo_1.jpg",
       "/residence-4/photo_2.jpg",
@@ -112,7 +112,7 @@ export const mockVillas: Villa[] = [
     featured: true,
     amenities: ["Double Climatisation", "Wi-Fi Haut Débit", "Télévision HD", "Chauffe-eau", "Cuisine équipée", "Canal+"],
     videoUrl: "/residence-5/video_main.mp4",
-    imageUrl: "/residence-5/photo_1.jpg",
+    imageUrl: "/residence-5/photo_1.jpg?v=20260813",
     images: [
       "/residence-5/photo_1.jpg",
       "/residence-5/photo_2.jpg",
@@ -132,7 +132,7 @@ export const mockVillas: Villa[] = [
     featured: false,
     amenities: ["Wi-Fi Haut Débit", "Climatisation", "Télévision HD", "Chauffe-eau", "Cuisine moderne"],
     videoUrl: "/residence-6/video_main.mp4",
-    imageUrl: "/residence-6/photo_1.jpg",
+    imageUrl: "/residence-6/photo_1.jpg?v=20260813",
     images: [
       "/residence-6/photo_1.jpg"
     ]
@@ -150,7 +150,7 @@ export const mockVillas: Villa[] = [
     featured: false,
     amenities: ["Wi-Fi Haut Débit", "Climatisation", "Télévision HD", "Chauffe-eau", "Cuisine équipée"],
     videoUrl: "/residence-7/video_main.mp4",
-    imageUrl: "/residence-7/photo_1.jpg",
+    imageUrl: "/residence-7/photo_1.jpg?v=20260813",
     images: [
       "/residence-7/photo_1.jpg",
       "/residence-7/photo_2.jpg"

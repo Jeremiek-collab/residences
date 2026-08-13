@@ -33,12 +33,18 @@ export const VillaCard: React.FC<VillaCardProps> = ({ villa, onSelect }) => {
           </span>
         </div>
 
-        {/* Villa Image */}
+        {/* Villa Image with self-healing cache-bypass onError handler */}
         <img 
           src={villa.imageUrl} 
           alt={villa.title} 
+          onError={(e) => {
+            const target = e.currentTarget;
+            if (!target.dataset.retried) {
+              target.dataset.retried = 'true';
+              target.src = `${villa.imageUrl.split('?')[0]}?cacheBust=${Date.now()}`;
+            }
+          }}
           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-          loading="lazy"
         />
       </div>
 
