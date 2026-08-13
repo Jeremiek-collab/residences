@@ -93,7 +93,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  // Helper to fetch live bookings from master central database
+  // Helper to fetch live bookings from master central database with union merge safeguard
   const loadCloudBookings = async () => {
     try {
       let cloudData: Booking[] | null = null;
@@ -120,9 +120,46 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         } catch (e) {}
       }
 
-      const finalData = (cloudData && cloudData.length > 0) ? cloudData : initialBookings;
-      setBookings(finalData);
-      localStorage.setItem('jacqueville_bookings', JSON.stringify(finalData));
+      const validCloud = (cloudData && cloudData.length > 0) ? cloudData : initialBookings;
+
+      // Read local cache from localStorage to preserve any local manual additions
+      const stored = localStorage.getItem('jacqueville_bookings');
+      let localList: Booking[] = [];
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            localList = parsed.filter(b => b && typeof b === 'object' && b.id);
+          }
+        } catch (e) {}
+      }
+
+      // Non-destructive Union Merge: Combine cloudData + local manual additions
+      const map = new Map<string, Booking>();
+      validCloud.forEach(b => map.set(b.id, b));
+
+      const unsyncedItems: Booking[] = [];
+      localList.forEach(b => {
+        if (b && b.id) {
+          if (!map.has(b.id)) {
+            map.set(b.id, b);
+            unsyncedItems.push(b);
+          }
+        }
+      });
+
+      const merged = Array.from(map.values());
+      setBookings(merged);
+      localStorage.setItem('jacqueville_bookings', JSON.stringify(merged));
+
+      // Auto-upload any local manual additions to the cloud server
+      if (unsyncedItems.length > 0) {
+        fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(merged)
+        }).catch(() => {});
+      }
     } catch (e) {
       setBookings(initialBookings);
     }
