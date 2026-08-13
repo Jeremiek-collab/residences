@@ -168,8 +168,9 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Load initial data & auto-sync from master cloud in real time (every 3 seconds)
   useEffect(() => {
     localStorage.removeItem('jacqueville_blob_url');
+    localStorage.removeItem('jacqueville_villas');
 
-    // 1. Load Villas (always synchronized with latest valid image paths)
+    // 1. Load Villas (strictly Residence 02 to 07)
     setVillas(mockVillas);
     localStorage.setItem('jacqueville_villas', JSON.stringify(mockVillas));
 
