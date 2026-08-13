@@ -1,5 +1,33 @@
 [
   {
+    "id": "booking-1786657560000",
+    "villaId": "residence-7",
+    "clientName": "Kobenan Frédéric",
+    "clientEmail": "frederyckouassi@gmail.com",
+    "clientPhone": "07 57 90 89 48",
+    "startDate": "2026-08-13",
+    "endDate": "2026-08-14",
+    "totalPrice": 25000,
+    "advancePaid": 0,
+    "status": "pending",
+    "notes": "Ajouté via administration",
+    "createdAt": "2026-08-13T21:46:00.000Z"
+  },
+  {
+    "id": "booking-1786657500000",
+    "villaId": "residence-2",
+    "clientName": "Kouakou Abran Caroline",
+    "clientEmail": "carolinekouakou08@gmail.com",
+    "clientPhone": "07 07 99 68 53",
+    "startDate": "2026-09-12",
+    "endDate": "2026-09-27",
+    "totalPrice": 450000,
+    "advancePaid": 0,
+    "status": "pending",
+    "notes": "Ajouté via administration",
+    "createdAt": "2026-08-13T21:45:00.000Z"
+  },
+  {
     "id": "mock-b1",
     "villaId": "residence-2",
     "clientName": "Jean-Pierre Kouadio",

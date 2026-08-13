@@ -120,8 +120,6 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         } catch (e) {}
       }
 
-      const validCloud = (cloudData && cloudData.length > 0) ? cloudData : initialBookings;
-
       // Read local cache from localStorage to preserve any local manual additions
       const stored = localStorage.getItem('jacqueville_bookings');
       let localList: Booking[] = [];
@@ -134,32 +132,22 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         } catch (e) {}
       }
 
-      // Non-destructive Union Merge: Combine cloudData + local manual additions
+      // Non-destructive Tri-Union Merge: initialBookings + cloudData + localList
       const map = new Map<string, Booking>();
-      validCloud.forEach(b => map.set(b.id, b));
+      initialBookings.forEach((b: Booking) => map.set(b.id, b));
+      if (cloudData && Array.isArray(cloudData)) {
+        cloudData.forEach((b: Booking) => { if (b && b.id) map.set(b.id, b); });
+      }
 
-      const unsyncedItems: Booking[] = [];
       localList.forEach(b => {
         if (b && b.id) {
-          if (!map.has(b.id)) {
-            map.set(b.id, b);
-            unsyncedItems.push(b);
-          }
+          map.set(b.id, b);
         }
       });
 
       const merged = Array.from(map.values());
       setBookings(merged);
       localStorage.setItem('jacqueville_bookings', JSON.stringify(merged));
-
-      // Auto-upload any local manual additions to the cloud server
-      if (unsyncedItems.length > 0) {
-        fetch('/api/bookings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(merged)
-        }).catch(() => {});
-      }
     } catch (e) {
       setBookings(initialBookings);
     }
