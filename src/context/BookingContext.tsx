@@ -96,53 +96,35 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Helper to fetch live bookings from master central database
   const loadCloudBookings = async () => {
     try {
-      let res = await fetch('/api/bookings', { cache: 'no-store' });
-      if (!res.ok) {
-        res = await fetch(MASTER_CLOUD_DB_URL, {
-          headers: { "Accept": "application/json" },
-          cache: "no-store"
-        });
-      }
+      let cloudData: Booking[] | null = null;
 
-      if (res.ok) {
-        const cloudData: Booking[] = await res.json();
-        if (Array.isArray(cloudData)) {
-          const validCloud = cloudData.filter(b => b && typeof b === 'object' && b.id);
-
-          // Read local cache from localStorage
-          const stored = localStorage.getItem('jacqueville_bookings');
-          let localList: Booking[] = [];
-          if (stored) {
-            try {
-              const parsed = JSON.parse(stored);
-              if (Array.isArray(parsed)) {
-                localList = parsed.filter(b => b && typeof b === 'object' && b.id);
-              }
-            } catch (e) {}
+      try {
+        const res = await fetch('/api/bookings', { cache: 'no-store' });
+        if (res.ok) {
+          const parsed = await res.json();
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            cloudData = parsed;
           }
-
-          // Union merge validCloud and localList by unique id
-          const map = new Map<string, Booking>();
-          validCloud.forEach(b => map.set(b.id, b));
-          localList.forEach(b => {
-            if (b && b.id) {
-              if (!map.has(b.id)) {
-                map.set(b.id, b);
-              } else {
-                const existing = map.get(b.id)!;
-                map.set(b.id, { ...existing, ...b });
-              }
-            }
-          });
-
-          // Master Cloud Server is authority: sync state and cache directly
-          const finalData = validCloud.length > 0 ? validCloud : initialBookings;
-          setBookings(finalData);
-          localStorage.setItem('jacqueville_bookings', JSON.stringify(finalData));
         }
+      } catch (e) {}
+
+      if (!cloudData) {
+        try {
+          const res2 = await fetch('https://palmaura-residences.com/api/bookings', { cache: 'no-store' });
+          if (res2.ok) {
+            const parsed = await res2.json();
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              cloudData = parsed;
+            }
+          }
+        } catch (e) {}
       }
+
+      const finalData = (cloudData && cloudData.length > 0) ? cloudData : initialBookings;
+      setBookings(finalData);
+      localStorage.setItem('jacqueville_bookings', JSON.stringify(finalData));
     } catch (e) {
-      console.warn("Erreur d'accès à la base de données cloud centrale (mode hors-ligne):", e);
+      setBookings(initialBookings);
     }
   };
 
