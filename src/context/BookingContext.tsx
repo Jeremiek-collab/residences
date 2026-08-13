@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Villa, mockVillas } from '../data/mockData';
+import { Villa, mockVillas, initialBookings } from '../data/mockData';
 
 export interface Booking {
   id: string;
@@ -135,9 +135,10 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             }
           });
 
-          const merged = Array.from(map.values());
-          setBookings(merged);
-          localStorage.setItem('jacqueville_bookings', JSON.stringify(merged));
+          // Master Cloud Server is authority: sync state and cache directly
+          const finalData = validCloud.length > 0 ? validCloud : initialBookings;
+          setBookings(finalData);
+          localStorage.setItem('jacqueville_bookings', JSON.stringify(finalData));
         }
       }
     } catch (e) {
@@ -191,8 +192,19 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const storedBookings = localStorage.getItem('jacqueville_bookings');
     if (storedBookings) {
       try {
-        setBookings(JSON.parse(storedBookings));
-      } catch (e) {}
+        const parsed = JSON.parse(storedBookings);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setBookings(parsed);
+        } else {
+          setBookings(initialBookings);
+          localStorage.setItem('jacqueville_bookings', JSON.stringify(initialBookings));
+        }
+      } catch (e) {
+        setBookings(initialBookings);
+      }
+    } else {
+      setBookings(initialBookings);
+      localStorage.setItem('jacqueville_bookings', JSON.stringify(initialBookings));
     }
     loadCloudBookings();
 
