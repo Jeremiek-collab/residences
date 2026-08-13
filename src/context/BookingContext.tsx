@@ -169,43 +169,9 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   useEffect(() => {
     localStorage.removeItem('jacqueville_blob_url');
 
-    // 1. Load Villas
-    const storedVillas = localStorage.getItem('jacqueville_villas');
-    if (storedVillas) {
-      try {
-        const parsed = JSON.parse(storedVillas) as Villa[];
-        const synced = mockVillas.map(mockVilla => {
-          const stored = parsed.find(v => v.id === mockVilla.id);
-          if (stored) {
-            return {
-              ...stored,
-              title: mockVilla.title,
-              subtitle: mockVilla.subtitle,
-              description: mockVilla.description,
-              pricePerNight: mockVilla.pricePerNight,
-              capacity: mockVilla.capacity,
-              bedrooms: mockVilla.bedrooms,
-              bathrooms: mockVilla.bathrooms,
-              location: mockVilla.location,
-              imageUrl: mockVilla.imageUrl,
-              videoUrl: mockVilla.videoUrl,
-              amenities: mockVilla.amenities,
-              featured: mockVilla.featured,
-              images: mockVilla.images
-            };
-          }
-          return mockVilla;
-        });
-        setVillas(synced);
-        localStorage.setItem('jacqueville_villas', JSON.stringify(synced));
-      } catch (e) {
-        setVillas(mockVillas);
-        localStorage.setItem('jacqueville_villas', JSON.stringify(mockVillas));
-      }
-    } else {
-      setVillas(mockVillas);
-      localStorage.setItem('jacqueville_villas', JSON.stringify(mockVillas));
-    }
+    // 1. Load Villas (always synchronized with latest valid image paths)
+    setVillas(mockVillas);
+    localStorage.setItem('jacqueville_villas', JSON.stringify(mockVillas));
 
     // 2. Load Bookings (first local cache, then live master cloud)
     const storedBookings = localStorage.getItem('jacqueville_bookings');

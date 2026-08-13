@@ -132,9 +132,9 @@ export const mockVillas: Villa[] = [
     featured: false,
     amenities: ["Wi-Fi Haut Débit", "Climatisation", "Télévision HD", "Chauffe-eau", "Cuisine moderne"],
     videoUrl: "/residence-6/video_main.mp4",
-    imageUrl: "/residence-6/photo_1.jpeg",
+    imageUrl: "/residence-6/photo_1.jpg",
     images: [
-      "/residence-6/photo_1.jpeg"
+      "/residence-6/photo_1.jpg"
     ]
   },
   {
