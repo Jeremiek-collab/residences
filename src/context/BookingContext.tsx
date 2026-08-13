@@ -109,35 +109,9 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         if (Array.isArray(cloudData)) {
           const validCloud = cloudData.filter(b => b && typeof b === 'object' && b.id);
 
-          // Read local cache from localStorage
-          const stored = localStorage.getItem('jacqueville_bookings');
-          let localList: Booking[] = [];
-          if (stored) {
-            try {
-              const parsed = JSON.parse(stored);
-              if (Array.isArray(parsed)) {
-                localList = parsed.filter(b => b && typeof b === 'object' && b.id);
-              }
-            } catch (e) {}
-          }
-
-          // Union merge validCloud and localList by unique id
-          const map = new Map<string, Booking>();
-          validCloud.forEach(b => map.set(b.id, b));
-          localList.forEach(b => {
-            if (b && b.id) {
-              if (!map.has(b.id)) {
-                map.set(b.id, b);
-              } else {
-                const existing = map.get(b.id)!;
-                map.set(b.id, { ...existing, ...b });
-              }
-            }
-          });
-
-          const merged = Array.from(map.values());
-          setBookings(merged);
-          localStorage.setItem('jacqueville_bookings', JSON.stringify(merged));
+          // Master Cloud Server is authority: sync state and cache directly
+          setBookings(validCloud);
+          localStorage.setItem('jacqueville_bookings', JSON.stringify(validCloud));
         }
       }
     } catch (e) {
