@@ -314,8 +314,13 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (res.ok) {
         const data = await res.json();
         if (data && Array.isArray(data.bookings)) {
-          setBookings(data.bookings);
-          localStorage.setItem('jacqueville_bookings', JSON.stringify(data.bookings));
+          const map = new Map<string, Booking>();
+          map.set(newBooking.id, newBooking);
+          data.bookings.forEach((b: Booking) => { if (b && b.id) map.set(b.id, b); });
+          updated.forEach(b => { if (b && b.id && !map.has(b.id)) map.set(b.id, b); });
+          const finalMerged = Array.from(map.values());
+          setBookings(finalMerged);
+          localStorage.setItem('jacqueville_bookings', JSON.stringify(finalMerged));
         }
       } else {
         await saveBookings(updated);
