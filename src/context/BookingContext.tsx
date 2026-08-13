@@ -71,34 +71,38 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   ];
 
-  // Helper to save bookings to both local state, localStorage and single master cloud DB
+  // Helper to save full list to both local storage and cloud database (fallback)
   const saveBookings = async (newBookings: Booking[]) => {
-    // 1. Update React state & local cache immediately
     setBookings(newBookings);
     localStorage.setItem('jacqueville_bookings', JSON.stringify(newBookings));
     
-    // 2. Push to master central cloud database
     try {
-      await fetch(MASTER_CLOUD_DB_URL, {
+      await fetch('/api/bookings', {
         method: "PUT",
-        headers: { 
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newBookings)
       });
     } catch (err) {
-      console.warn("Erreur de synchronisation cloud centrale:", err);
+      try {
+        await fetch(MASTER_CLOUD_DB_URL, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newBookings)
+        });
+      } catch (e) {}
     }
   };
 
   // Helper to fetch live bookings from master central database
   const loadCloudBookings = async () => {
     try {
-      const res = await fetch(MASTER_CLOUD_DB_URL, {
-        headers: { "Accept": "application/json" },
-        cache: "no-store"
-      });
+      let res = await fetch('/api/bookings', { cache: 'no-store' });
+      if (!res.ok) {
+        res = await fetch(MASTER_CLOUD_DB_URL, {
+          headers: { "Accept": "application/json" },
+          cache: "no-store"
+        });
+      }
 
       if (res.ok) {
         const cloudData: Booking[] = await res.json();
@@ -134,15 +138,6 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           const merged = Array.from(map.values());
           setBookings(merged);
           localStorage.setItem('jacqueville_bookings', JSON.stringify(merged));
-
-          // If localList had items missing from cloud, sync back to master DB
-          if (merged.length > validCloud.length) {
-            fetch(MASTER_CLOUD_DB_URL, {
-              method: "PUT",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(merged)
-            }).catch(() => {});
-          }
         }
       }
     } catch (e) {
@@ -150,9 +145,8 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  // Load initial data & auto-sync from master cloud in real time (every 5 seconds)
+  // Load initial data & auto-sync from master cloud in real time (every 3 seconds)
   useEffect(() => {
-    // Clean up legacy device-specific blob overrides if present
     localStorage.removeItem('jacqueville_blob_url');
 
     // 1. Load Villas
@@ -202,8 +196,8 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
     loadCloudBookings();
 
-    // Auto-refresh from master cloud every 5 seconds so all devices stay 100% identical
-    const intervalId = setInterval(loadCloudBookings, 5000);
+    // Auto-refresh from master cloud every 3 seconds so all devices stay 100% synchronized in real time
+    const intervalId = setInterval(loadCloudBookings, 3000);
 
     // 3. Load Reviews
     const storedReviews = localStorage.getItem('jacqueville_reviews');
@@ -275,33 +269,70 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     const updated = [newBooking, ...bookings];
-    await saveBookings(updated);
+    setBookings(updated);
+    localStorage.setItem('jacqueville_bookings', JSON.stringify(updated));
+
+    // Send ATOMIC POST add request to Vercel serverless API (prevents inter-device overwrites!)
+    try {
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add', booking: newBooking })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.bookings)) {
+          setBookings(data.bookings);
+          localStorage.setItem('jacqueville_bookings', JSON.stringify(data.bookings));
+        }
+      } else {
+        await saveBookings(updated);
+      }
+    } catch (e) {
+      await saveBookings(updated);
+    }
+
     return newBooking;
   };
 
   const updateBookingStatus = (id: string, status: Booking['status']) => {
-    const updated = bookings.map(b => {
-      if (b.id === id) {
-        return { ...b, status };
-      }
-      return b;
-    });
-    saveBookings(updated);
+    const updated = bookings.map(b => (b.id === id ? { ...b, status } : b));
+    setBookings(updated);
+    localStorage.setItem('jacqueville_bookings', JSON.stringify(updated));
+
+    // Send ATOMIC update request to API
+    fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'update', bookingId: id, status })
+    }).catch(() => saveBookings(updated));
   };
 
   const updateBookingPricing = (id: string, totalPrice: number, advancePaid: number) => {
-    const updated = bookings.map(b => {
-      if (b.id === id) {
-        return { ...b, totalPrice, advancePaid };
-      }
-      return b;
-    });
-    saveBookings(updated);
+    const updated = bookings.map(b => (b.id === id ? { ...b, totalPrice, advancePaid } : b));
+    setBookings(updated);
+    localStorage.setItem('jacqueville_bookings', JSON.stringify(updated));
+
+    // Send ATOMIC update request to API
+    fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'update', bookingId: id, totalPrice, advancePaid })
+    }).catch(() => saveBookings(updated));
   };
 
   const deleteBooking = (id: string) => {
     const updated = bookings.filter(b => b.id !== id);
-    saveBookings(updated);
+    setBookings(updated);
+    localStorage.setItem('jacqueville_bookings', JSON.stringify(updated));
+
+    // Send ATOMIC delete request to API
+    fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'delete', bookingId: id })
+    }).catch(() => saveBookings(updated));
   };
 
   const blockDatesManually = (villaId: string, startDate: string, endDate: string, note: string) => {
@@ -319,7 +350,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       notes: note,
       createdAt: new Date().toISOString()
     };
-    saveBookings([newBlock, ...bookings]);
+    addBooking(newBlock);
   };
 
   // Add a review
