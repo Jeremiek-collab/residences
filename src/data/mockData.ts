@@ -17,28 +17,6 @@ export interface Villa {
 
 export const mockVillas: Villa[] = [
   {
-    id: "residence-1",
-    title: "Résidence 01",
-    subtitle: "Séjour de Grand Confort",
-    description: "Profitez d'un séjour exceptionnel dans cette superbe résidence située au quartier Millionnaire Est à Jacqueville. Elle dispose de la climatisation, du Wi-Fi haut débit, d'une télévision HD et d'un chauffe-eau.",
-    pricePerNight: 35000,
-    capacity: 4,
-    bedrooms: 2,
-    bathrooms: 2,
-    location: "Jacqueville, Quartier Millionnaire Est",
-    featured: true,
-    amenities: ["Wi-Fi Haut Débit", "Climatisation", "Télévision HD", "Chauffe-eau", "Cuisine équipée", "Canal+"],
-    videoUrl: "/residence-1/video_main.mp4",
-    imageUrl: "/residence-1/photo_1.jpg?v=20260813",
-    images: [
-      "/residence-1/photo_1.jpg",
-      "/residence-1/photo_2.jpg",
-      "/residence-1/photo_3.jpg",
-      "/residence-1/photo_4.jpg",
-      "/residence-1/photo_5.jpg"
-    ]
-  },
-  {
     id: "residence-2",
     title: "Résidence 02",
     subtitle: "Élégance et Sérénité",

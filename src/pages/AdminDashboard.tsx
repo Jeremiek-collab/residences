@@ -45,7 +45,7 @@ export const AdminDashboard: React.FC = () => {
 
   // Manual Add Booking Modal State
   const [isAddBookingModalOpen, setIsAddBookingModalOpen] = useState(false);
-  const [newVillaId, setNewVillaId] = useState(villas[0]?.id || 'residence-1');
+  const [newVillaId, setNewVillaId] = useState(villas[0]?.id || 'residence-2');
   const [newClientName, setNewClientName] = useState('');
   const [newClientEmail, setNewClientEmail] = useState('');
   const [newClientPhone, setNewClientPhone] = useState('');
@@ -80,7 +80,7 @@ export const AdminDashboard: React.FC = () => {
 
         if (!exists) {
           addBooking({
-            villaId: villaId || 'residence-1',
+            villaId: villaId || 'residence-2',
             clientName: clientName.trim(),
             clientEmail: clientEmail.trim() || 'client@email.com',
             clientPhone: clientPhone ? clientPhone.trim() : 'Non renseigné',
@@ -1196,7 +1196,7 @@ export const AdminDashboard: React.FC = () => {
 
                       // Extract link or URL query parameters if link was pasted
                       let text = importRawText;
-                      let villaId = 'residence-1';
+                      let villaId = 'residence-2';
                       let clientName = '';
                       let clientPhone = '';
                       let clientEmail = '';
